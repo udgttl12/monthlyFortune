@@ -73,11 +73,23 @@ jobs:
         run: .venv/bin/python -m unittest discover -s tests -v
 
       - name: Configure SSH
+        env:
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
           install -m 700 -d ~/.ssh
           printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          known_hosts="$(ssh-keyscan -p 22 -H "${DEPLOY_HOST}" 2>/dev/null || true)"
+          known_hosts=""
+          for attempt in 1 2 3 4 5; do
+            known_hosts="$(ssh-keyscan -T 10 -p 22 -H "${DEPLOY_HOST}" 2>/dev/null || true)"
+            if [ -n "${known_hosts}" ]; then
+              break
+            fi
+            sleep 5
+          done
+          if [ -z "${known_hosts}" ] && [ -n "${DEPLOY_KNOWN_HOSTS:-}" ]; then
+            known_hosts="${DEPLOY_KNOWN_HOSTS}"
+          fi
           if [ -z "${known_hosts}" ]; then
             echo "::error title=Host key scan failed::Could not read SSH host keys from ${DEPLOY_HOST}:22."
             exit 1

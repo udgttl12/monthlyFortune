@@ -147,6 +147,7 @@ Add these environment secrets:
 
 - `DEPLOY_HOST`: `donggyu.link`
 - `DEPLOY_SSH_KEY`: the private key for `ec2-user`
+- `DEPLOY_KNOWN_HOSTS`: optional fallback output of `ssh-keyscan -H donggyu.link`
 
 The workflow deploys as `ec2-user` to `/var/www/python/monthlyFortune`.
 
