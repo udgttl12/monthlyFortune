@@ -4,15 +4,15 @@ After=network.target
 
 [Service]
 Type=simple
-User=monthlyfortune
-Group=monthlyfortune
-WorkingDirectory=/srv/monthly-fortune
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/var/www/python/monthlyFortune
 Environment=PYTHONUNBUFFERED=1
-EnvironmentFile=-/srv/monthly-fortune/.env.production
+EnvironmentFile=-/var/www/python/monthlyFortune/.env.production
 Environment=API_HOST=127.0.0.1
 Environment=API_PORT=8000
 Environment=UVICORN_WORKERS=2
-ExecStart=/usr/bin/bash /srv/monthly-fortune/scripts/start-backend.sh
+ExecStart=/usr/bin/bash /var/www/python/monthlyFortune/scripts/start-backend.sh
 Restart=always
 RestartSec=5
 

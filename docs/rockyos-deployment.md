@@ -22,16 +22,14 @@ If your RockyOS image ships an older Node.js, install Node.js 20 before building
 ## 2. Create an app user
 
 ```bash
-sudo useradd --system --create-home --shell /bin/bash monthlyfortune
-sudo mkdir -p /srv/monthly-fortune
-sudo chown -R monthlyfortune:monthlyfortune /srv/monthly-fortune
+sudo install -d -m 755 -o ec2-user -g ec2-user /var/www/python/monthlyFortune
 ```
 
 ## 3. Clone the project
 
 ```bash
-sudo -u monthlyfortune git clone <YOUR_REPOSITORY_URL> /srv/monthly-fortune
-cd /srv/monthly-fortune
+git clone <YOUR_REPOSITORY_URL> /var/www/python/monthlyFortune
+cd /var/www/python/monthlyFortune
 ```
 
 ## 4. Create the frontend environment file
@@ -55,20 +53,20 @@ If you leave `XAI_API_KEY` empty, the app falls back to deterministic monthly in
 ## 5. Build and install dependencies
 
 ```bash
-sudo -u monthlyfortune bash scripts/deploy-rockyos.sh
+bash scripts/deploy-rockyos.sh
 ```
 
 If you want to skip tests during a hotfix deploy:
 
 ```bash
-sudo -u monthlyfortune RUN_TESTS=0 bash scripts/deploy-rockyos.sh
+RUN_TESTS=0 bash scripts/deploy-rockyos.sh
 ```
 
 For the very first deploy, the script automatically skips service restarts until the `systemd` units are installed.
 
 ## 6. Install systemd units
 
-Copy the template files and adjust the paths or usernames if your server layout is different from `/srv/monthly-fortune` and `monthlyfortune`.
+Copy the template files. They assume `/var/www/python/monthlyFortune` and `ec2-user`.
 
 ```bash
 sudo cp deploy/rockyos/monthly-fortune-api.service /etc/systemd/system/
@@ -83,7 +81,7 @@ sudo systemctl enable --now monthly-fortune-web
 Edit the server name first:
 
 ```bash
-sudo vi /srv/monthly-fortune/deploy/rockyos/monthly-fortune.nginx.conf
+sudo vi /var/www/python/monthlyFortune/deploy/rockyos/monthly-fortune.nginx.conf
 ```
 
 Set:
@@ -128,9 +126,9 @@ sudo journalctl -u nginx -n 100 --no-pager
 ## Updating the server
 
 ```bash
-cd /srv/monthly-fortune
-sudo -u monthlyfortune git pull
-sudo -u monthlyfortune bash scripts/deploy-rockyos.sh
+cd /var/www/python/monthlyFortune
+git pull
+bash scripts/deploy-rockyos.sh
 ```
 
 ## GitHub Actions deployment
@@ -161,7 +159,7 @@ If the deploy user is not `root`, it must be able to restart the services withou
 Example sudoers entry:
 
 ```text
-monthlyfortune ALL=NOPASSWD:/usr/bin/systemctl daemon-reload,/usr/bin/systemctl restart monthly-fortune-api,/usr/bin/systemctl restart monthly-fortune-web,/usr/bin/systemctl reload nginx
+ec2-user ALL=NOPASSWD:/usr/bin/systemctl daemon-reload,/usr/bin/systemctl restart monthly-fortune-api,/usr/bin/systemctl restart monthly-fortune-web,/usr/bin/systemctl reload nginx
 ```
 
 Create it with:

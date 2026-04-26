@@ -85,6 +85,11 @@ jobs:
           printf '%s\n' "${known_hosts}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
+      - name: Prepare deployment directory
+        run: |
+          ssh -p 22 "ec2-user@${DEPLOY_HOST}" \
+            "sudo install -d -m 755 -o ec2-user -g ec2-user /var/www/python/monthlyFortune"
+
       - name: Sync repository to server
         run: |
           rsync -az --delete \

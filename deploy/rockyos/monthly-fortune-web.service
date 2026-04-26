@@ -4,15 +4,15 @@ After=network.target monthly-fortune-api.service
 
 [Service]
 Type=simple
-User=monthlyfortune
-Group=monthlyfortune
-WorkingDirectory=/srv/monthly-fortune
+User=ec2-user
+Group=ec2-user
+WorkingDirectory=/var/www/python/monthlyFortune
 Environment=NODE_ENV=production
-EnvironmentFile=-/srv/monthly-fortune/.env.production
+EnvironmentFile=-/var/www/python/monthlyFortune/.env.production
 Environment=WEB_HOST=127.0.0.1
 Environment=WEB_PORT=3000
 Environment=MONTHLY_FORTUNE_API_URL=http://127.0.0.1:8000
-ExecStart=/usr/bin/bash /srv/monthly-fortune/scripts/start-frontend.sh
+ExecStart=/usr/bin/bash /var/www/python/monthlyFortune/scripts/start-frontend.sh
 Restart=always
 RestartSec=5
 
