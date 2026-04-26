@@ -21,6 +21,24 @@ jobs:
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
     steps:
+      - name: Validate deployment configuration
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          missing=0
+
+          if [ -z "${DEPLOY_HOST:-}" ]; then
+            echo "::error title=Missing DEPLOY_HOST::Set the production environment secret DEPLOY_HOST to donggyu.link."
+            missing=1
+          fi
+
+          if [ -z "${DEPLOY_SSH_KEY:-}" ]; then
+            echo "::error title=Missing DEPLOY_SSH_KEY::Set the production environment secret DEPLOY_SSH_KEY to the ec2-user private key."
+            missing=1
+          fi
+
+          exit "${missing}"
+
       - name: Check out repository
         uses: actions/checkout@v5
 
@@ -59,7 +77,12 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          known_hosts="$(ssh-keyscan -p 22 -H "${DEPLOY_HOST}" 2>/dev/null || true)"
+          if [ -z "${known_hosts}" ]; then
+            echo "::error title=Host key scan failed::Could not read SSH host keys from ${DEPLOY_HOST}:22."
+            exit 1
+          fi
+          printf '%s\n' "${known_hosts}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
 
       - name: Sync repository to server

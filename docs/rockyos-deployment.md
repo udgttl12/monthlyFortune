@@ -147,13 +147,12 @@ Create a GitHub Actions environment named `production`.
 
 Add these environment secrets:
 
-- `DEPLOY_HOST`: your RockyOS server hostname or IP
+- `DEPLOY_HOST`: `donggyu.link`
 - `DEPLOY_SSH_KEY`: the private key for `ec2-user`
-- `DEPLOY_KNOWN_HOSTS`: output of `ssh-keyscan -H your-server`
 
 The workflow deploys as `ec2-user` to `/var/www/python/monthlyFortune`.
 
-It connects over SSH port `22`.
+It connects over SSH port `22` and scans the server host key during deployment.
 
 ### Deploy user permissions
 
