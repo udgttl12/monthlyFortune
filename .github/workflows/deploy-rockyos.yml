@@ -87,7 +87,7 @@ jobs:
 
       - name: Prepare deployment directory
         run: |
-          ssh -p 22 "ec2-user@${DEPLOY_HOST}" \
+          ssh -p 22 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 "ec2-user@${DEPLOY_HOST}" \
             "sudo install -d -m 755 -o ec2-user -g ec2-user /var/www/python/monthlyFortune"
 
       - name: Sync repository to server
@@ -105,12 +105,12 @@ jobs:
             --exclude 'live-frontend.err.log' \
             --exclude 'live-frontend.log' \
             --exclude '.env.production' \
-            -e "ssh -p 22" \
+            -e "ssh -p 22 -o ServerAliveInterval=30 -o ServerAliveCountMax=10" \
             ./ "ec2-user@${DEPLOY_HOST}:/var/www/python/monthlyFortune/"
 
       - name: Build and restart services on server
         run: |
-          ssh -p 22 "ec2-user@${DEPLOY_HOST}" bash -s <<'EOF'
+          ssh -p 22 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 "ec2-user@${DEPLOY_HOST}" bash -s <<'EOF'
           set -euo pipefail
           cd /var/www/python/monthlyFortune
           RUN_TESTS=0 RESTART_SERVICES=0 SYSTEMD_RELOAD=0 bash scripts/deploy-rockyos.sh
