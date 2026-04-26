@@ -87,7 +87,7 @@ sudo vi /var/www/python/monthlyFortune/deploy/rockyos/monthly-fortune.nginx.conf
 Set:
 
 ```nginx
-server_name fortune.example.com;
+server_name donggyu.link;
 ```
 
 Then install and enable it:
@@ -159,7 +159,7 @@ If the deploy user is not `root`, it must be able to restart the services withou
 Example sudoers entry:
 
 ```text
-ec2-user ALL=NOPASSWD:/usr/bin/systemctl daemon-reload,/usr/bin/systemctl restart monthly-fortune-api,/usr/bin/systemctl restart monthly-fortune-web,/usr/bin/systemctl reload nginx
+ec2-user ALL=NOPASSWD:/usr/bin/install,/usr/sbin/nginx,/usr/bin/systemctl daemon-reload,/usr/bin/systemctl enable monthly-fortune-api,/usr/bin/systemctl enable monthly-fortune-web,/usr/bin/systemctl enable nginx,/usr/bin/systemctl restart monthly-fortune-api,/usr/bin/systemctl restart monthly-fortune-web,/usr/bin/systemctl reload nginx
 ```
 
 Create it with:

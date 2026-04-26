@@ -116,14 +116,22 @@ jobs:
           RUN_TESTS=0 RESTART_SERVICES=0 SYSTEMD_RELOAD=0 bash scripts/deploy-rockyos.sh
 
           if [ "$(id -u)" -eq 0 ]; then
-            systemctl daemon-reload
-            systemctl restart monthly-fortune-api
-            systemctl restart monthly-fortune-web
-            systemctl reload nginx
+            SUDO=()
           else
-            sudo -n systemctl daemon-reload
-            sudo -n systemctl restart monthly-fortune-api
-            sudo -n systemctl restart monthly-fortune-web
-            sudo -n systemctl reload nginx
+            SUDO=(sudo -n)
           fi
+
+          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-api.service /etc/systemd/system/monthly-fortune-api.service
+          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-web.service /etc/systemd/system/monthly-fortune-web.service
+          "${SUDO[@]}" install -d -m 755 /etc/nginx/conf.d
+          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune.nginx.conf /etc/nginx/conf.d/monthly-fortune.conf
+          "${SUDO[@]}" nginx -t
+          "${SUDO[@]}" systemctl daemon-reload
+          "${SUDO[@]}" systemctl enable monthly-fortune-api
+          "${SUDO[@]}" systemctl enable monthly-fortune-web
+          "${SUDO[@]}" systemctl enable nginx
+          "${SUDO[@]}" systemctl restart monthly-fortune-api
+          "${SUDO[@]}" systemctl restart monthly-fortune-web
+          "${SUDO[@]}" systemctl reload nginx
+
           EOF
