@@ -1,0 +1,20 @@
+[Unit]
+Description=Monthly Fortune FastAPI backend
+After=network.target
+
+[Service]
+Type=simple
+User=monthlyfortune
+Group=monthlyfortune
+WorkingDirectory=/srv/monthly-fortune
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/srv/monthly-fortune/.env.production
+Environment=API_HOST=127.0.0.1
+Environment=API_PORT=8000
+Environment=UVICORN_WORKERS=2
+ExecStart=/usr/bin/bash /srv/monthly-fortune/scripts/start-backend.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

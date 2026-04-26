@@ -4,9 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:backend": "python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "start:prod": "next start --hostname 127.0.0.1 --port 3000",
+    "lint": "next lint",
+    "test:frontend": "node --import tsx --test app/lib/horoscope.test.ts"
   },
   "dependencies": {
     "next": "14.2.5",
@@ -19,6 +22,7 @@
     "@types/react": "18.3.3",
     "@types/react-dom": "18.3.0",
     "eslint": "8.57.0",
-    "eslint-config-next": "14.2.5"
+    "eslint-config-next": "14.2.5",
+    "tsx": "^4.20.6"
   }
 }

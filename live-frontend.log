@@ -1,0 +1,24 @@
+
+> monthly-fortune@0.1.0 dev
+> next dev --hostname 127.0.0.1 --port 3000
+
+  ▲ Next.js 14.2.5
+  - Local:        http://127.0.0.1:3000
+  - Network:      http://127.0.0.1:3000
+  - Experiments (use with caution):
+    · typedRoutes
+
+ ✓ Starting...
+ ✓ Ready in 1530ms
+ ○ Compiling / ...
+ ✓ Compiled / in 713ms (489 modules)
+ GET / 200 in 866ms
+ GET / 200 in 45ms
+ ✓ Compiled /horoscope in 248ms (496 modules)
+ GET /horoscope 200 in 360ms
+ ✓ Compiled /chart in 142ms (499 modules)
+ GET /chart?birthDate=1988-12-06&timeUnknown=false&birthTime=19%3A59&country=KR&city=%EB%B6%80%EC%82%B0&timezone=Asia%2FSeoul 200 in 191ms
+ GET / 200 in 44ms
+ ✓ Compiled in 335ms (499 modules)
+ ✓ Compiled in 650ms (513 modules)
+ ✓ Compiled in 401ms (513 modules)

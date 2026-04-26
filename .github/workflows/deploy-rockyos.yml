@@ -1,0 +1,101 @@
+name: Deploy to RockyOS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build, test, and deploy
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Install backend dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run backend tests
+        run: .venv/bin/python -m unittest discover -s tests -v
+
+      - name: Configure SSH
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          printf '%s\n' "${{ secrets.DEPLOY_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Sync repository to server
+        run: |
+          rsync -az --delete \
+            --exclude '.git/' \
+            --exclude '.github/' \
+            --exclude '.next/' \
+            --exclude '.venv/' \
+            --exclude '.venv-root/' \
+            --exclude 'astro-app/' \
+            --exclude 'node_modules/' \
+            --exclude 'live-backend.err.log' \
+            --exclude 'live-backend.log' \
+            --exclude 'live-frontend.err.log' \
+            --exclude 'live-frontend.log' \
+            --exclude '.env.production' \
+            -e "ssh -p 22" \
+            ./ "ec2-user@${DEPLOY_HOST}:/var/www/python/monthlyFortune/"
+
+      - name: Build and restart services on server
+        run: |
+          ssh -p 22 "ec2-user@${DEPLOY_HOST}" bash -s <<'EOF'
+          set -euo pipefail
+          cd /var/www/python/monthlyFortune
+          RUN_TESTS=0 RESTART_SERVICES=0 SYSTEMD_RELOAD=0 bash scripts/deploy-rockyos.sh
+
+          if [ "$(id -u)" -eq 0 ]; then
+            systemctl daemon-reload
+            systemctl restart monthly-fortune-api
+            systemctl restart monthly-fortune-web
+            systemctl reload nginx
+          else
+            sudo -n systemctl daemon-reload
+            sudo -n systemctl restart monthly-fortune-api
+            sudo -n systemctl restart monthly-fortune-web
+            sudo -n systemctl reload nginx
+          fi
+          EOF

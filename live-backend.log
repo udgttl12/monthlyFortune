@@ -1,0 +1,6 @@
+INFO:     127.0.0.1:52055 - "GET /api/horoscope/monthly?year=2026&month=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52056 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51825 - "GET /api/horoscope/monthly?year=2026&month=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53114 - "GET /api/horoscope/monthly?year=2026&month=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64750 - "GET /api/horoscope/monthly?year=2026&month=4 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49671 - "GET /api/horoscope/monthly?year=2026&month=4 HTTP/1.1" 200 OK

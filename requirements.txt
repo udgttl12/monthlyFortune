@@ -1,2 +1,6 @@
 fastapi>=0.115.0
 uvicorn>=0.30.0
+httpx>=0.28.0
+pysweph>=2.10.3.6
+timezonefinder>=8.2.0
+tzdata>=2026.1

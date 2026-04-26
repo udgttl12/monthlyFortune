@@ -1,0 +1,20 @@
+[Unit]
+Description=Monthly Fortune Next.js frontend
+After=network.target monthly-fortune-api.service
+
+[Service]
+Type=simple
+User=monthlyfortune
+Group=monthlyfortune
+WorkingDirectory=/srv/monthly-fortune
+Environment=NODE_ENV=production
+EnvironmentFile=-/srv/monthly-fortune/.env.production
+Environment=WEB_HOST=127.0.0.1
+Environment=WEB_PORT=3000
+Environment=MONTHLY_FORTUNE_API_URL=http://127.0.0.1:8000
+ExecStart=/usr/bin/bash /srv/monthly-fortune/scripts/start-frontend.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
