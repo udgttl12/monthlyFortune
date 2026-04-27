@@ -136,7 +136,7 @@ jobs:
           "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-api.service /etc/systemd/system/monthly-fortune-api.service
           "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-web.service /etc/systemd/system/monthly-fortune-web.service
           "${SUDO[@]}" install -d -m 755 /etc/nginx/conf.d
-          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune.nginx.conf /etc/nginx/conf.d/monthly-fortune.conf
+          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune.nginx.conf /etc/nginx/conf.d/donggyu.link.conf
           "${SUDO[@]}" nginx -t
           "${SUDO[@]}" systemctl daemon-reload
           "${SUDO[@]}" systemctl enable monthly-fortune-api

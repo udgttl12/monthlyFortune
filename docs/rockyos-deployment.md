@@ -93,7 +93,7 @@ server_name donggyu.link;
 Then install and enable it:
 
 ```bash
-sudo cp deploy/rockyos/monthly-fortune.nginx.conf /etc/nginx/conf.d/monthly-fortune.conf
+sudo cp deploy/rockyos/monthly-fortune.nginx.conf /etc/nginx/conf.d/donggyu.link.conf
 sudo nginx -t
 sudo systemctl enable --now nginx
 sudo systemctl reload nginx
