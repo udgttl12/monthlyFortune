@@ -62,6 +62,19 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: Prepare frontend artifact
+        run: |
+          if [ ! -f .next/standalone/server.js ]; then
+            echo "::error title=Missing standalone frontend artifact::Next.js did not create .next/standalone/server.js."
+            exit 1
+          fi
+          rm -rf .next/standalone/.next/static .next/standalone/public
+          mkdir -p .next/standalone/.next
+          cp -R .next/static .next/standalone/.next/static
+          if [ -d public ]; then
+            cp -R public .next/standalone/public
+          fi
+
       - name: Install backend dependencies
         run: |
           python -m venv .venv
@@ -107,7 +120,7 @@ jobs:
           rsync -az --delete \
             --exclude '.git/' \
             --exclude '.github/' \
-            --exclude '.next/' \
+            --exclude '.next/cache/' \
             --exclude '.venv/' \
             --exclude '.venv-root/' \
             --exclude 'astro-app/' \
@@ -125,7 +138,7 @@ jobs:
           ssh -p 22 -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 "ec2-user@${DEPLOY_HOST}" bash -s <<'EOF'
           set -euo pipefail
           cd /var/www/python/monthlyFortune
-          RUN_TESTS=0 RESTART_SERVICES=0 SYSTEMD_RELOAD=0 bash scripts/deploy-rockyos.sh
+          RUN_TESTS=0 FRONTEND_INSTALL=0 FRONTEND_BUILD=0 RESTART_SERVICES=0 SYSTEMD_RELOAD=0 bash scripts/deploy-rockyos.sh
 
           if [ "$(id -u)" -eq 0 ]; then
             SUDO=()

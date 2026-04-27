@@ -5,6 +5,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-python3}"
 NPM_BIN="${NPM_BIN:-npm}"
 RUN_TESTS="${RUN_TESTS:-1}"
+FRONTEND_INSTALL="${FRONTEND_INSTALL:-1}"
+FRONTEND_BUILD="${FRONTEND_BUILD:-1}"
 SYSTEMD_RELOAD="${SYSTEMD_RELOAD:-1}"
 RESTART_SERVICES="${RESTART_SERVICES:-1}"
 API_SERVICE_NAME="${API_SERVICE_NAME:-monthly-fortune-api}"
@@ -18,8 +20,14 @@ fi
 
 ".venv/bin/pip" install --upgrade pip
 ".venv/bin/pip" install -r requirements.txt
-"${NPM_BIN}" ci
-"${NPM_BIN}" run build
+
+if [[ "${FRONTEND_INSTALL}" == "1" ]]; then
+  "${NPM_BIN}" ci
+fi
+
+if [[ "${FRONTEND_BUILD}" == "1" ]]; then
+  "${NPM_BIN}" run build
+fi
 
 if [[ "${RUN_TESTS}" == "1" ]]; then
   ".venv/bin/python" -m unittest discover -s tests -v

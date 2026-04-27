@@ -12,4 +12,11 @@ if [[ ! -d "${ROOT_DIR}/.next" ]]; then
   exit 1
 fi
 
+if [[ -f "${ROOT_DIR}/.next/standalone/server.js" ]]; then
+  export HOSTNAME="${WEB_HOST}"
+  export PORT="${WEB_PORT}"
+  cd "${ROOT_DIR}/.next/standalone"
+  exec node server.js
+fi
+
 exec npm run start -- --hostname "${WEB_HOST}" --port "${WEB_PORT}"
