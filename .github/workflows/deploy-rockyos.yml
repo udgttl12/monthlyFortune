@@ -24,6 +24,7 @@ jobs:
       - name: Validate deployment configuration
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
         run: |
           missing=0
 
@@ -34,6 +35,11 @@ jobs:
 
           if [ -z "${DEPLOY_SSH_KEY:-}" ]; then
             echo "::error title=Missing DEPLOY_SSH_KEY::Set the production environment secret DEPLOY_SSH_KEY to the ec2-user private key."
+            missing=1
+          fi
+
+          if [ -z "${DEPLOY_KNOWN_HOSTS:-}" ]; then
+            echo "::error title=Missing DEPLOY_KNOWN_HOSTS::Set the production environment secret DEPLOY_KNOWN_HOSTS to the ssh-keyscan output for donggyu.link."
             missing=1
           fi
 
@@ -92,32 +98,13 @@ jobs:
           install -m 700 -d ~/.ssh
           printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
-          known_hosts=""
-          for attempt in 1 2 3 4 5; do
-            known_hosts="$(ssh-keyscan -T 10 -p 22 -H "${DEPLOY_HOST}" 2>/dev/null || true)"
-            if [ -n "${known_hosts}" ]; then
-              break
-            fi
-            sleep 5
-          done
-          if [ -z "${known_hosts}" ] && [ -n "${DEPLOY_KNOWN_HOSTS:-}" ]; then
-            known_hosts="${DEPLOY_KNOWN_HOSTS}"
-          fi
-          if [ -z "${known_hosts}" ]; then
-            echo "::error title=Host key scan failed::Could not read SSH host keys from ${DEPLOY_HOST}:22."
-            exit 1
-          fi
-          printf '%s\n' "${known_hosts}" > ~/.ssh/known_hosts
+          printf '%s\n' "${DEPLOY_KNOWN_HOSTS}" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/known_hosts
-
-      - name: Prepare deployment directory
-        run: |
-          ssh -p 22 -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 "ec2-user@${DEPLOY_HOST}" \
-            "sudo -n install -d -m 755 -o ec2-user -g ec2-user /var/www/python/monthlyFortune"
 
       - name: Sync repository to server
         run: |
           rsync -az --delete \
+            --rsync-path "mkdir -p /var/www/python/monthlyFortune && rsync" \
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude '.next/cache/' \
