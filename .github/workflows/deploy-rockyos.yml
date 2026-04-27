@@ -110,8 +110,8 @@ jobs:
             --exclude '.next/cache/' \
             --exclude '.venv/' \
             --exclude '.venv-root/' \
-            --exclude 'astro-app/' \
-            --exclude 'node_modules/' \
+            --exclude '/astro-app/' \
+            --exclude '/node_modules/' \
             --exclude 'live-backend.err.log' \
             --exclude 'live-backend.log' \
             --exclude 'live-frontend.err.log' \
