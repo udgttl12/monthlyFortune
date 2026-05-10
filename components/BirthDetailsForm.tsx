@@ -1,6 +1,7 @@
 "use client";
 
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { normalizeBirthDateInput, parseBirthDateInput } from "@/app/lib/birthDateInput";
 import {
   COUNTRY_OPTIONS,
   getCitiesByCountry,
@@ -34,14 +35,24 @@ export default function BirthDetailsForm({
 }: BirthDetailsFormProps) {
   const [country, setCountry] = useState("KR");
   const [city, setCity] = useState("서울");
+  const [birthDateInput, setBirthDateInput] = useState("");
+  const [birthDateSubmitError, setBirthDateSubmitError] = useState("");
   const [birthTime, setBirthTime] = useState("12:00");
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [year, setYear] = useState(defaultYear);
 
+  const birthDate = parseBirthDateInput(birthDateInput) ?? "";
+  const birthDateError =
+    birthDateInput.length === 8 && !birthDate ? "존재하는 생년월일을 입력해 주세요." : birthDateSubmitError;
   const cityOptions = getCitiesByCountry(country);
   const matchedLocation = getLocationOption(city, country);
   const timezone = matchedLocation?.timezone ?? getDefaultTimezone(country);
   const isKnownCity = matchedLocation !== undefined;
+
+  function handleBirthDateChange(event: ChangeEvent<HTMLInputElement>) {
+    setBirthDateInput(normalizeBirthDateInput(event.target.value));
+    setBirthDateSubmitError("");
+  }
 
   function handleCountryChange(event: ChangeEvent<HTMLSelectElement>) {
     const nextCountry = event.target.value;
@@ -51,8 +62,17 @@ export default function BirthDetailsForm({
     setCity(nextCity);
   }
 
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    if (!birthDate) {
+      event.preventDefault();
+      setBirthDateSubmitError(
+        birthDateInput.length === 8 ? "존재하는 생년월일을 입력해 주세요." : "생년월일 8자리를 입력해 주세요."
+      );
+    }
+  }
+
   return (
-    <form className="form-grid" action={action} method="GET">
+    <form className="form-grid" action={action} method="GET" onSubmit={handleSubmit}>
       <div className="field-card full-width">
         <h3>1. 생년월일</h3>
         <p className="helper-text">
@@ -61,7 +81,28 @@ export default function BirthDetailsForm({
         <div className="field-grid">
           <label>
             생년월일
-            <input type="date" name="birthDate" required />
+            <input
+              type="text"
+              value={birthDateInput}
+              onChange={handleBirthDateChange}
+              inputMode="numeric"
+              autoComplete="bday"
+              placeholder="예: 19940718"
+              maxLength={8}
+              pattern="[0-9]{8}"
+              aria-invalid={birthDateError ? "true" : undefined}
+              aria-describedby="birth-date-hint birth-date-error"
+              required
+            />
+            <input type="hidden" name="birthDate" value={birthDate} />
+            <span id="birth-date-hint" className="input-hint">
+              하이픈 없이 숫자 8자리
+            </span>
+            {birthDateError ? (
+              <span id="birth-date-error" className="field-error">
+                {birthDateError}
+              </span>
+            ) : null}
           </label>
 
           {showYearField ? (
