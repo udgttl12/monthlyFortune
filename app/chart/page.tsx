@@ -1,4 +1,15 @@
+import CopyResultsButton from "@/components/CopyResultsButton";
 import { getCountryLabel, getDefaultTimezone } from "@/app/lib/locations";
+import {
+  CORE_POINT_ORDER,
+  POINT_LABELS,
+  buildChartResultText,
+  formatAspectDirection,
+  formatBirthDate,
+  formatBirthTime,
+  formatDegree
+} from "@/app/lib/resultText";
+import type { NatalChartResponse } from "@/app/lib/resultText";
 
 const API_BASE_URL = process.env.MONTHLY_FORTUNE_API_URL ?? "http://127.0.0.1:8000";
 
@@ -12,106 +23,6 @@ interface ChartPageProps {
     timeUnknown?: string;
   };
 }
-
-interface ChartPoint {
-  name: string;
-  longitude: number;
-  sign: string;
-  degree: number;
-  minute: number;
-  retrograde: boolean;
-  house: number | null;
-}
-
-interface ChartAngle {
-  longitude: number;
-  sign: string;
-  degree: number;
-  minute: number;
-}
-
-interface ChartHouse {
-  houseNumber: number;
-  sign: string;
-  cuspLongitude: number;
-}
-
-interface ChartAspect {
-  pointA: string;
-  pointB: string;
-  aspect: string;
-  orb: number;
-  applying: boolean;
-}
-
-interface NatalChartResponse {
-  points: ChartPoint[];
-  angles: {
-    asc: ChartAngle;
-    mc: ChartAngle;
-  };
-  houses: ChartHouse[];
-  aspects: ChartAspect[];
-  location: {
-    resolvedName: string;
-    latitude: number;
-    longitude: number;
-    timezone: string;
-    countryCode: string;
-  };
-}
-
-function formatBirthDate(value?: string) {
-  if (!value) {
-    return "입력되지 않음";
-  }
-
-  return value.replaceAll("-", ".");
-}
-
-function formatBirthTime(value?: string, timeUnknown?: string) {
-  if (!value) {
-    return "입력되지 않음";
-  }
-
-  if (timeUnknown === "true") {
-    return `${value} (정오 기준 임시값)`;
-  }
-
-  return value;
-}
-
-function formatDegree(sign: string, degree: number, minute: number) {
-  return `${sign} ${String(degree).padStart(2, "0")}°${String(minute).padStart(2, "0")}′`;
-}
-
-function formatAspectDirection(applying: boolean) {
-  return applying ? "정확각으로 접근 중" : "정확각을 지난 상태";
-}
-
-const CORE_POINT_ORDER = ["Sun", "Moon", "Mercury", "Venus", "Mars"];
-
-const POINT_LABELS: Record<string, string> = {
-  Sun: "태양",
-  Moon: "달",
-  Mercury: "수성",
-  Venus: "금성",
-  Mars: "화성",
-  Jupiter: "목성",
-  Saturn: "토성",
-  Uranus: "천왕성",
-  Neptune: "해왕성",
-  Pluto: "명왕성",
-  "North Node": "북노드",
-  Lilith: "릴리스",
-  Chiron: "키론",
-  Fortune: "포춘",
-  Vertex: "버텍스",
-  ASC: "ASC",
-  MC: "MC",
-  DSC: "DSC",
-  IC: "IC"
-};
 
 async function getNatalChart(searchParams: ChartPageProps["searchParams"]): Promise<{
   data: NatalChartResponse | null;
@@ -159,6 +70,7 @@ export default async function ChartPage({ searchParams }: ChartPageProps) {
   const isTimeEstimated = searchParams.timeUnknown === "true";
   const primaryPoints = data?.points.filter((point) => CORE_POINT_ORDER.includes(point.name)) ?? [];
   const highlightedAspects = data?.aspects.slice(0, 8) ?? [];
+  const chartResultText = data ? buildChartResultText({ searchParams, data }) : "";
 
   return (
     <div className="stack">
@@ -209,6 +121,10 @@ export default async function ChartPage({ searchParams }: ChartPageProps) {
 
       {data ? (
         <>
+          <div className="result-toolbar">
+            <CopyResultsButton text={chartResultText} />
+          </div>
+
           <section className="card">
             <div className="chart-meta-grid">
               <article className="metric-card">

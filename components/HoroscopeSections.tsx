@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Route } from "next";
+import CopyResultsButton from "@/components/CopyResultsButton";
 import {
   HoroscopeDateInsight,
   HoroscopeEvidence,
@@ -14,6 +15,7 @@ import {
   getSelectedHoroscopeYear,
   hasRequiredBirthDetails
 } from "@/app/lib/horoscope";
+import { buildHoroscopeResultText } from "@/app/lib/resultText";
 
 const API_BASE_URL = process.env.MONTHLY_FORTUNE_API_URL ?? "http://127.0.0.1:8000";
 
@@ -173,8 +175,19 @@ export default async function HoroscopeSections({ searchParams }: HoroscopeSecti
     );
   }
 
+  const horoscopeResultText = buildHoroscopeResultText({
+    searchParams,
+    yearly,
+    monthly,
+    selectedMonth
+  });
+
   return (
     <div className="stack">
+      <div className="result-toolbar">
+        <CopyResultsButton text={horoscopeResultText} />
+      </div>
+
       <section className="card">
         <div className="section-heading">
           <div>

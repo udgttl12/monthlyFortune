@@ -262,6 +262,17 @@ button.preset-chip {
   gap: 0.75rem;
 }
 
+.result-toolbar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.copy-results-button {
+  min-width: 10.5rem;
+  min-height: 2.75rem;
+  white-space: nowrap;
+}
+
 .secondary-button {
   background: var(--accent-soft);
   color: var(--text);
@@ -619,6 +630,14 @@ button.preset-chip {
 
   .button-row {
     flex-direction: column;
+  }
+
+  .result-toolbar {
+    justify-content: stretch;
+  }
+
+  .copy-results-button {
+    width: 100%;
   }
 
   .section-heading {
