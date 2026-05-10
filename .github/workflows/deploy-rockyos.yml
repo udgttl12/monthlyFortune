@@ -120,7 +120,7 @@ jobs:
             -e "ssh -p 22 -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10" \
             ./ "ec2-user@${DEPLOY_HOST}:/var/www/python/monthlyFortune/"
 
-      - name: Build and restart services on server
+      - name: Build and restart application services on server
         run: |
           ssh -p 22 -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 "ec2-user@${DEPLOY_HOST}" bash -s <<'EOF'
           set -euo pipefail
@@ -135,16 +135,10 @@ jobs:
 
           "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-api.service /etc/systemd/system/monthly-fortune-api.service
           "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-web.service /etc/systemd/system/monthly-fortune-web.service
-          "${SUDO[@]}" install -d -m 755 /etc/nginx/conf.d
-          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune.nginx.conf /etc/nginx/conf.d/donggyu.link.conf
-          "${SUDO[@]}" rm -f /etc/nginx/conf.d/monthly-fortune.conf
-          "${SUDO[@]}" nginx -t
           "${SUDO[@]}" systemctl daemon-reload
           "${SUDO[@]}" systemctl enable monthly-fortune-api
           "${SUDO[@]}" systemctl enable monthly-fortune-web
-          "${SUDO[@]}" systemctl enable nginx
           "${SUDO[@]}" systemctl restart monthly-fortune-api
           "${SUDO[@]}" systemctl restart monthly-fortune-web
-          "${SUDO[@]}" systemctl reload nginx
 
           EOF
