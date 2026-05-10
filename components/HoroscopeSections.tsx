@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import CopyResultsButton from "@/components/CopyResultsButton";
+import FloatingMenu from "@/components/FloatingMenu";
 import {
   HoroscopeDateInsight,
   HoroscopeEvidence,
@@ -15,6 +16,7 @@ import {
   getSelectedHoroscopeYear,
   hasRequiredBirthDetails
 } from "@/app/lib/horoscope";
+import { buildFloatingMenuItems } from "@/app/lib/floatingMenu";
 import { buildHoroscopeResultText } from "@/app/lib/resultText";
 
 const API_BASE_URL = process.env.MONTHLY_FORTUNE_API_URL ?? "http://127.0.0.1:8000";
@@ -181,6 +183,13 @@ export default async function HoroscopeSections({ searchParams }: HoroscopeSecti
     monthly,
     selectedMonth
   });
+  const floatingMenuItems = buildFloatingMenuItems({
+    page: "horoscope",
+    searchParams,
+    hasCopyText: true,
+    selectedYear,
+    selectedMonth
+  });
 
   return (
     <div className="stack">
@@ -248,6 +257,7 @@ export default async function HoroscopeSections({ searchParams }: HoroscopeSecti
       </div>
 
       <EvidenceList items={monthly.evidence} />
+      <FloatingMenu items={floatingMenuItems} copyText={horoscopeResultText} />
     </div>
   );
 }

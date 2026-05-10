@@ -273,6 +273,59 @@ button.preset-chip {
   white-space: nowrap;
 }
 
+.floating-menu {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 50;
+  display: grid;
+  justify-items: end;
+  gap: 0.65rem;
+  pointer-events: none;
+}
+
+.floating-menu-panel {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 12rem;
+  opacity: 0;
+  transform: translateY(0.5rem);
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  pointer-events: none;
+}
+
+.floating-menu-panel.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.floating-menu-item {
+  width: 100%;
+  min-height: 2.5rem;
+  justify-content: flex-start;
+  border-radius: 14px;
+  padding: 0.72rem 0.9rem;
+  background: rgba(18, 36, 51, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+  text-decoration: none;
+  backdrop-filter: blur(16px);
+}
+
+.floating-menu-item:hover {
+  border-color: rgba(242, 185, 75, 0.36);
+}
+
+.floating-menu-toggle {
+  min-width: 4.5rem;
+  min-height: 3rem;
+  border-radius: 999px;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.34);
+  pointer-events: auto;
+}
+
 .secondary-button {
   background: var(--accent-soft);
   color: var(--text);
@@ -638,6 +691,16 @@ button.preset-chip {
 
   .copy-results-button {
     width: 100%;
+  }
+
+  .floating-menu {
+    right: 0.85rem;
+    bottom: 0.85rem;
+    left: 0.85rem;
+  }
+
+  .floating-menu-panel {
+    width: min(18rem, 100%);
   }
 
   .section-heading {

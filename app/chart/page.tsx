@@ -1,5 +1,7 @@
 import CopyResultsButton from "@/components/CopyResultsButton";
+import FloatingMenu from "@/components/FloatingMenu";
 import { getCountryLabel, getDefaultTimezone } from "@/app/lib/locations";
+import { buildFloatingMenuItems } from "@/app/lib/floatingMenu";
 import {
   CORE_POINT_ORDER,
   POINT_LABELS,
@@ -71,6 +73,11 @@ export default async function ChartPage({ searchParams }: ChartPageProps) {
   const primaryPoints = data?.points.filter((point) => CORE_POINT_ORDER.includes(point.name)) ?? [];
   const highlightedAspects = data?.aspects.slice(0, 8) ?? [];
   const chartResultText = data ? buildChartResultText({ searchParams, data }) : "";
+  const floatingMenuItems = buildFloatingMenuItems({
+    page: "chart",
+    searchParams,
+    hasCopyText: Boolean(chartResultText)
+  });
 
   return (
     <div className="stack">
@@ -226,6 +233,8 @@ export default async function ChartPage({ searchParams }: ChartPageProps) {
           </section>
         </>
       ) : null}
+
+      <FloatingMenu items={floatingMenuItems} copyText={chartResultText} />
     </div>
   );
 }

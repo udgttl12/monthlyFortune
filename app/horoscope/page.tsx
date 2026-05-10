@@ -30,7 +30,7 @@ export default function HoroscopePage({ searchParams }: HoroscopePageProps) {
         </p>
       </section>
 
-      <section className="card">
+      <section className="card" id="birth-details">
         <div className="section-heading">
           <div>
             <h2>개인 운세 조회</h2>

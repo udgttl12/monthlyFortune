@@ -1,4 +1,6 @@
 import BirthDetailsForm from "@/components/BirthDetailsForm";
+import FloatingMenu from "@/components/FloatingMenu";
+import { buildFloatingMenuItems } from "@/app/lib/floatingMenu";
 
 export default function HomePage() {
   return (
@@ -17,7 +19,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="card">
+      <section className="card" id="birth-details">
         <div className="section-heading">
           <div>
             <h2>출생 정보 입력</h2>
@@ -52,6 +54,8 @@ export default function HomePage() {
           </p>
         </article>
       </section>
+
+      <FloatingMenu items={buildFloatingMenuItems({ page: "home" })} />
     </div>
   );
 }
