@@ -1,20 +1,15 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import { readLastViewedBirthDetails, writeLastViewedBirthDetails } from "@/app/lib/birthDetailsStorage";
 import { normalizeBirthDateInput, parseBirthDateInput } from "@/app/lib/birthDateInput";
+import { normalizeBirthTimeInput, parseBirthTimeInput } from "@/app/lib/birthTimeInput";
 import {
   COUNTRY_OPTIONS,
   getCitiesByCountry,
   getDefaultTimezone,
   getLocationOption
 } from "@/app/lib/locations";
-
-const TIME_PRESETS = [
-  { label: "이른 아침 06:00", value: "06:00" },
-  { label: "정오 12:00", value: "12:00" },
-  { label: "오후 15:00", value: "15:00" },
-  { label: "저녁 18:00", value: "18:00" }
-];
 
 interface BirthDetailsFormProps {
   action?: string;
@@ -37,21 +32,52 @@ export default function BirthDetailsForm({
   const [city, setCity] = useState("서울");
   const [birthDateInput, setBirthDateInput] = useState("");
   const [birthDateSubmitError, setBirthDateSubmitError] = useState("");
-  const [birthTime, setBirthTime] = useState("12:00");
+  const [birthTimeInput, setBirthTimeInput] = useState("1200");
+  const [birthTimeSubmitError, setBirthTimeSubmitError] = useState("");
   const [timeUnknown, setTimeUnknown] = useState(false);
   const [year, setYear] = useState(defaultYear);
 
   const birthDate = parseBirthDateInput(birthDateInput) ?? "";
+  const parsedBirthTime = parseBirthTimeInput(birthTimeInput);
+  const birthTime = timeUnknown ? "12:00" : parsedBirthTime ?? "";
   const birthDateError =
     birthDateInput.length === 8 && !birthDate ? "존재하는 생년월일을 입력해 주세요." : birthDateSubmitError;
+  const birthTimeError =
+    !timeUnknown && birthTimeInput.length === 4 && !parsedBirthTime
+      ? "존재하는 출생 시간을 입력해 주세요."
+      : birthTimeSubmitError;
   const cityOptions = getCitiesByCountry(country);
   const matchedLocation = getLocationOption(city, country);
   const timezone = matchedLocation?.timezone ?? getDefaultTimezone(country);
   const isKnownCity = matchedLocation !== undefined;
 
+  useEffect(() => {
+    const stored = readLastViewedBirthDetails(window.localStorage);
+
+    if (!stored) {
+      return;
+    }
+
+    const storedCountry = COUNTRY_OPTIONS.some((option) => option.code === stored.country)
+      ? stored.country
+      : "KR";
+
+    setBirthDateInput(stored.birthDateInput);
+    setBirthTimeInput(stored.birthTimeInput || "1200");
+    setCountry(storedCountry);
+    setCity(stored.city || getCitiesByCountry(storedCountry)[0]?.city || "서울");
+    setTimeUnknown(stored.timeUnknown);
+    setYear(stored.year);
+  }, []);
+
   function handleBirthDateChange(event: ChangeEvent<HTMLInputElement>) {
     setBirthDateInput(normalizeBirthDateInput(event.target.value));
     setBirthDateSubmitError("");
+  }
+
+  function handleBirthTimeChange(event: ChangeEvent<HTMLInputElement>) {
+    setBirthTimeInput(normalizeBirthTimeInput(event.target.value));
+    setBirthTimeSubmitError("");
   }
 
   function handleCountryChange(event: ChangeEvent<HTMLSelectElement>) {
@@ -63,11 +89,44 @@ export default function BirthDetailsForm({
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    if (!birthDate) {
-      event.preventDefault();
+    const hasValidBirthDate = Boolean(birthDate);
+    const hasValidBirthTime = timeUnknown || Boolean(parsedBirthTime);
+
+    if (!hasValidBirthDate) {
       setBirthDateSubmitError(
         birthDateInput.length === 8 ? "존재하는 생년월일을 입력해 주세요." : "생년월일 8자리를 입력해 주세요."
       );
+    }
+
+    if (!hasValidBirthTime) {
+      setBirthTimeSubmitError(
+        birthTimeInput.length === 4 ? "존재하는 출생 시간을 입력해 주세요." : "출생 시간 4자리를 입력해 주세요."
+      );
+    }
+
+    if (!hasValidBirthDate || !hasValidBirthTime) {
+      event.preventDefault();
+      return;
+    }
+
+    writeLastViewedBirthDetails(window.localStorage, {
+      birthDateInput,
+      birthTimeInput: timeUnknown ? "1200" : birthTimeInput,
+      city,
+      country,
+      timeUnknown,
+      year
+    });
+  }
+
+  function handleTimeUnknownChange(event: ChangeEvent<HTMLInputElement>) {
+    const checked = event.target.checked;
+
+    setTimeUnknown(checked);
+    setBirthTimeSubmitError("");
+
+    if (checked) {
+      setBirthTimeInput("1200");
     }
   }
 
@@ -132,51 +191,42 @@ export default function BirthDetailsForm({
         </p>
 
         <label className="checkbox-row">
-          <input
-            type="checkbox"
-            checked={timeUnknown}
-            onChange={(event) => {
-              const checked = event.target.checked;
-
-              setTimeUnknown(checked);
-              if (checked) {
-                setBirthTime("12:00");
-              }
-            }}
-          />
+            <input
+              type="checkbox"
+              checked={timeUnknown}
+              onChange={handleTimeUnknownChange}
+            />
           출생 시간을 정확히 모름
         </label>
 
-        {timeUnknown ? <input type="hidden" name="birthTime" value="12:00" /> : null}
+        <input type="hidden" name="birthTime" value={birthTime} />
         <input type="hidden" name="timeUnknown" value={timeUnknown ? "true" : "false"} />
 
         <label>
           출생 시간
           <input
-            type="time"
-            name={timeUnknown ? undefined : "birthTime"}
-            value={birthTime}
-            onChange={(event) => setBirthTime(event.target.value)}
+            type="text"
+            value={birthTimeInput}
+            onChange={handleBirthTimeChange}
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="예: 0930"
+            maxLength={4}
+            pattern="[0-9]{4}"
+            aria-invalid={birthTimeError ? "true" : undefined}
+            aria-describedby="birth-time-hint birth-time-error"
             disabled={timeUnknown}
             required={!timeUnknown}
           />
+          <span id="birth-time-hint" className="input-hint">
+            하이픈 없이 숫자 4자리
+          </span>
+          {birthTimeError ? (
+            <span id="birth-time-error" className="field-error">
+              {birthTimeError}
+            </span>
+          ) : null}
         </label>
-
-        <div className="preset-row">
-          {TIME_PRESETS.map((preset) => (
-            <button
-              key={preset.value}
-              type="button"
-              className="preset-chip"
-              onClick={() => {
-                setBirthTime(preset.value);
-                setTimeUnknown(false);
-              }}
-            >
-              {preset.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="field-card">
