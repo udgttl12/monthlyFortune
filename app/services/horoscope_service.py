@@ -1,3 +1,5 @@
+from typing import Optional
+
 from app.schemas.chart import NatalChartRequest
 from app.schemas.horoscope import (
     MonthlyHoroscopeRequest,
@@ -23,7 +25,7 @@ class HoroscopeService:
         yearly_cache: TTLCache,
         monthly_cache: TTLCache,
         analysis_cache: TTLCache,
-        xai_service: XAIService | None = None,
+        xai_service: Optional[XAIService] = None,
     ) -> None:
         self.astrology_service = astrology_service
         self.chart_engine = chart_engine

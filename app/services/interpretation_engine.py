@@ -1,3 +1,5 @@
+from typing import Optional
+
 from app.schemas.horoscope import (
     HoroscopeDateInsight,
     HoroscopeEvidence,
@@ -78,7 +80,7 @@ class InterpretationEngine:
     def apply_llm_enhancement(
         self,
         fallback: MonthlyHoroscopeResponse,
-        enhancement: MonthlyHoroscopeLLMResponse | None,
+        enhancement: Optional[MonthlyHoroscopeLLMResponse],
     ) -> MonthlyHoroscopeResponse:
         if enhancement is None:
             return fallback

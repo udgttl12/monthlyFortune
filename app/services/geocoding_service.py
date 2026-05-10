@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Final
+from typing import Final, Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import httpx
@@ -54,11 +54,11 @@ KNOWN_LOCATION_OVERRIDES: Final[dict[tuple[str, str], ResolvedLocation]] = {
 
 
 class GeocodingService:
-    def __init__(self, cache: TTLCache | None = None) -> None:
+    def __init__(self, cache: Optional[TTLCache] = None) -> None:
         self.cache = cache or TTLCache(ttl_seconds=7 * 24 * 60 * 60)
         self.timezone_finder = TimezoneFinder()
 
-    def resolve(self, city: str, country_code: str, timezone_override: str | None = None) -> ResolvedLocation:
+    def resolve(self, city: str, country_code: str, timezone_override: Optional[str] = None) -> ResolvedLocation:
         normalized_country = country_code.strip().upper()
         normalized_city = _normalize_city(city)
         cache_key = f"{normalized_country}:{normalized_city}:{timezone_override or ''}"
@@ -82,7 +82,7 @@ class GeocodingService:
         self.cache.set(cache_key, final_location.__dict__)
         return final_location
 
-    def _resolve_known_location(self, country_code: str, normalized_city: str) -> ResolvedLocation | None:
+    def _resolve_known_location(self, country_code: str, normalized_city: str) -> Optional[ResolvedLocation]:
         return KNOWN_LOCATION_OVERRIDES.get((country_code, normalized_city))
 
     def _resolve_via_nominatim(self, city: str, country_code: str) -> ResolvedLocation:

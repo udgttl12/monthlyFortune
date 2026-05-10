@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from statistics import fmean
-from typing import Final
+from typing import Final, Optional, Tuple
 from zoneinfo import ZoneInfo
 
 from app.schemas.chart import NatalChartResponse
@@ -323,7 +323,7 @@ class TransitEngine:
         target_map["MC"] = natal_chart.angles.mc.longitude
         return target_map
 
-    def _find_aspect(self, transit_longitude: float, natal_longitude: float) -> tuple[str | None, float]:
+    def _find_aspect(self, transit_longitude: float, natal_longitude: float) -> Tuple[Optional[str], float]:
         diff = self._normalize(transit_longitude - natal_longitude)
         for aspect_name, aspect_angle, _ in ASPECT_POLICY:
             max_orb = ASPECT_ORBS[aspect_name]
@@ -374,7 +374,7 @@ class TransitEngine:
         reverse: bool,
     ) -> TransitWindow:
         best_start_index = 0
-        best_score: float | None = None
+        best_score: Optional[float] = None
         window_size = min(3, len(daily_scores))
 
         for start_index in range(0, len(daily_scores) - window_size + 1):

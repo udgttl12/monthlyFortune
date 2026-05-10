@@ -1,6 +1,6 @@
 import json
 import os
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 
@@ -12,9 +12,9 @@ from app.services.transit_engine import MonthlyTransitAnalysis
 class XAIService:
     def __init__(
         self,
-        api_key: str | None = None,
-        model: str | None = None,
-        timeout_seconds: float | None = None,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+        timeout_seconds: Optional[float] = None,
     ) -> None:
         self.api_key = api_key or os.getenv("XAI_API_KEY")
         self.model = model or os.getenv("XAI_MODEL", "grok-4.20-reasoning")
@@ -30,7 +30,7 @@ class XAIService:
         profile: NatalProfile,
         analysis: MonthlyTransitAnalysis,
         fallback_payload: dict[str, Any],
-    ) -> MonthlyHoroscopeLLMResponse | None:
+    ) -> Optional[MonthlyHoroscopeLLMResponse]:
         if not self.enabled:
             return None
 
@@ -112,7 +112,7 @@ class XAIService:
         except Exception:
             return None
 
-    def _extract_output_text(self, payload: dict[str, Any]) -> str | None:
+    def _extract_output_text(self, payload: dict[str, Any]) -> Optional[str]:
         if isinstance(payload.get("output_text"), str):
             return payload["output_text"]
 

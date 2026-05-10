@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -13,7 +14,7 @@ class NatalChartRequest(CamelModel):
     birth_time: str = Field(alias="birthTime", pattern=r"^\d{2}:\d{2}$")
     city: str = Field(min_length=1)
     country_code: str = Field(alias="countryCode", min_length=2, max_length=2)
-    timezone: str | None = None
+    timezone: Optional[str] = None
 
     @field_validator("city")
     @classmethod
@@ -30,7 +31,7 @@ class NatalChartRequest(CamelModel):
 
     @field_validator("timezone")
     @classmethod
-    def validate_timezone(cls, value: str | None) -> str | None:
+    def validate_timezone(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
             return None
 
@@ -53,7 +54,7 @@ class ChartPoint(CamelModel):
     degree: int
     minute: int
     retrograde: bool
-    house: int | None = None
+    house: Optional[int] = None
 
 
 class ChartAngle(CamelModel):

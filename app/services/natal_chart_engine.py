@@ -1,7 +1,7 @@
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Final
+from typing import Final, Optional
 
 import swisseph as swe
 
@@ -71,17 +71,17 @@ class CalculatedPoint:
     longitude: float
     speed: float
     retrograde: bool
-    house: int | None = None
+    house: Optional[int] = None
 
 
 class NatalChartEngine:
-    def __init__(self, ephemeris_path: Path | None = None) -> None:
+    def __init__(self, ephemeris_path: Optional[Path] = None) -> None:
         self.ephemeris_path = ephemeris_path or Path(__file__).resolve().parents[1] / "data" / "ephe"
         self._ensure_ephemeris_path()
 
     def calculate_chart(self, birth_dt_local: datetime, latitude: float, longitude: float) -> dict:
         self._ensure_ephemeris_path()
-        birth_dt_utc = birth_dt_local.astimezone(UTC)
+        birth_dt_utc = birth_dt_local.astimezone(timezone.utc)
         julian_day = swe.julday(
             birth_dt_utc.year,
             birth_dt_utc.month,

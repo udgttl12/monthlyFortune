@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import ValidationError
 
@@ -40,12 +42,12 @@ horoscope_service = HoroscopeService(
 
 @router.get("/yearly", response_model=YearlyHoroscopeResponse)
 def get_yearly_horoscope(
-    birth_date: str | None = Query(None, alias="birthDate"),
-    birth_time: str | None = Query(None, alias="birthTime"),
-    city: str | None = Query(None),
-    country_code: str | None = Query(None, alias="countryCode"),
-    year: str | None = Query(None),
-    timezone: str | None = Query(None),
+    birth_date: Optional[str] = Query(None, alias="birthDate"),
+    birth_time: Optional[str] = Query(None, alias="birthTime"),
+    city: Optional[str] = Query(None),
+    country_code: Optional[str] = Query(None, alias="countryCode"),
+    year: Optional[str] = Query(None),
+    timezone: Optional[str] = Query(None),
 ) -> YearlyHoroscopeResponse:
     try:
         request = YearlyHoroscopeRequest(
@@ -67,13 +69,13 @@ def get_yearly_horoscope(
 
 @router.get("/monthly", response_model=MonthlyHoroscopeResponse)
 def get_monthly_horoscope(
-    birth_date: str | None = Query(None, alias="birthDate"),
-    birth_time: str | None = Query(None, alias="birthTime"),
-    city: str | None = Query(None),
-    country_code: str | None = Query(None, alias="countryCode"),
-    year: str | None = Query(None),
-    month: str | None = Query(None),
-    timezone: str | None = Query(None),
+    birth_date: Optional[str] = Query(None, alias="birthDate"),
+    birth_time: Optional[str] = Query(None, alias="birthTime"),
+    city: Optional[str] = Query(None),
+    country_code: Optional[str] = Query(None, alias="countryCode"),
+    year: Optional[str] = Query(None),
+    month: Optional[str] = Query(None),
+    timezone: Optional[str] = Query(None),
 ) -> MonthlyHoroscopeResponse:
     try:
         request = MonthlyHoroscopeRequest(

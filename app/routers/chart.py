@@ -1,3 +1,5 @@
+from typing import Optional
+
 from fastapi import APIRouter, HTTPException, Query
 
 from app.schemas.chart import NatalChartRequest, NatalChartResponse
@@ -21,7 +23,7 @@ def get_natal_chart(
     birth_time: str = Query(..., alias="birthTime", description="HH:MM"),
     city: str = Query(...),
     country_code: str = Query(..., alias="countryCode"),
-    timezone: str | None = Query(None),
+    timezone: Optional[str] = Query(None),
 ) -> NatalChartResponse:
     try:
         request = NatalChartRequest(

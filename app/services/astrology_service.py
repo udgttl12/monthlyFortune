@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 from app.schemas.chart import NatalChartRequest, NatalChartResponse, ResolvedLocation
@@ -21,7 +22,7 @@ class AstrologyService:
         self,
         natal_chart_engine: NatalChartEngine,
         geocoding_service: GeocodingService,
-        cache: TTLCache | None = None,
+        cache: Optional[TTLCache] = None,
     ) -> None:
         self.natal_chart_engine = natal_chart_engine
         self.geocoding_service = geocoding_service

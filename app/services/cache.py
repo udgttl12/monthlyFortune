@@ -1,6 +1,6 @@
 import time
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 
 @dataclass
@@ -14,7 +14,7 @@ class TTLCache:
         self.ttl_seconds = ttl_seconds
         self._store: dict[str, CacheEntry] = {}
 
-    def get(self, key: str) -> Any | None:
+    def get(self, key: str) -> Optional[Any]:
         entry = self._store.get(key)
         if entry is None:
             return None
