@@ -123,7 +123,8 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   background: #0f1220;
   color: var(--text);
   border: 1px solid var(--border);
@@ -133,7 +134,8 @@ select {
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   outline: 2px solid rgba(242, 185, 75, 0.45);
   outline-offset: 2px;
 }
@@ -625,6 +627,92 @@ button.preset-chip {
 .evidence-card p {
   color: var(--muted);
   line-height: 1.55;
+}
+
+.action-calendar-grid {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.action-day-card {
+  display: grid;
+  gap: 0.7rem;
+  min-height: 230px;
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.action-day-card.supportive,
+.daily-brief-card.supportive {
+  border-color: rgba(108, 214, 160, 0.24);
+  background: rgba(108, 214, 160, 0.07);
+}
+
+.action-day-card.challenging,
+.daily-brief-card.challenging {
+  border-color: rgba(255, 140, 140, 0.22);
+  background: rgba(255, 140, 140, 0.07);
+}
+
+.action-day-card p,
+.coach-answer p {
+  line-height: 1.55;
+}
+
+.inline-link,
+.button-link {
+  color: var(--accent-strong);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.6rem;
+  padding: 0 0.95rem;
+  border-radius: 14px;
+  border: 1px solid rgba(242, 185, 75, 0.24);
+  background: rgba(242, 185, 75, 0.1);
+}
+
+.link-toolbar {
+  gap: 0.7rem;
+}
+
+.daily-brief-card {
+  display: grid;
+  gap: 1rem;
+}
+
+.coach-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.coach-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.coach-form button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+.form-error {
+  color: #ffb1a6;
+  font-weight: 700;
+}
+
+.coach-answer {
+  display: grid;
+  gap: 1rem;
 }
 
 .two-column-grid {

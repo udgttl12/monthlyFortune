@@ -27,6 +27,15 @@ fi
 
 if [[ "${FRONTEND_BUILD}" == "1" ]]; then
   "${NPM_BIN}" run build
+
+  if [[ -f ".next/standalone/server.js" ]]; then
+    rm -rf ".next/standalone/.next/static" ".next/standalone/public"
+    mkdir -p ".next/standalone/.next"
+    cp -R ".next/static" ".next/standalone/.next/static"
+    if [[ -d "public" ]]; then
+      cp -R "public" ".next/standalone/public"
+    fi
+  fi
 fi
 
 if [[ "${RUN_TESTS}" == "1" ]]; then

@@ -3,6 +3,7 @@ node_modules
 out
 .DS_Store
 npm-debug.log*
+live-ai-*.log
 __pycache__/
 *.py[cod]
 .venv*/

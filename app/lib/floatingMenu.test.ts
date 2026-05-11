@@ -9,7 +9,7 @@ import {
 const birthSearchParams = {
   birthDate: "1990-01-01",
   birthTime: "09:30",
-  city: "부산",
+  city: "Seoul",
   country: "KR",
   timezone: "Asia/Seoul",
   timeUnknown: "false",
@@ -26,7 +26,7 @@ test("chart floating menu puts copy first and links to horoscope with current bi
 
   assert.deepEqual(
     items.map((item) => item.label),
-    ["ChatGPT용 전체 복사", "운세 보기", "입력 수정", "맨 위로"]
+    ["결과 복사", "월간 운세", "입력 수정", "맨 위로"]
   );
   assert.equal(items[0].action, "copy");
   assert.equal(items[1].href?.startsWith("/horoscope?"), true);
@@ -34,7 +34,7 @@ test("chart floating menu puts copy first and links to horoscope with current bi
   assert.match(items[1].href ?? "", /country=KR/);
 });
 
-test("horoscope floating menu includes previous and next month links", () => {
+test("horoscope floating menu includes ai retention and adjacent month links", () => {
   const items = buildFloatingMenuItems({
     page: "horoscope",
     searchParams: birthSearchParams,
@@ -43,12 +43,11 @@ test("horoscope floating menu includes previous and next month links", () => {
     hasCopyText: true
   });
 
-  assert.deepEqual(
-    items.map((item) => item.label),
-    ["ChatGPT용 전체 복사", "출생 차트 보기", "이전 달", "다음 달", "입력 수정", "맨 위로"]
-  );
-  assert.match(items[2].href ?? "", /month=4/);
-  assert.match(items[3].href ?? "", /month=6/);
+  assert.equal(items.some((item) => item.href?.startsWith("/today?")), true);
+  assert.equal(items.some((item) => item.href?.startsWith("/calendar?")), true);
+  assert.equal(items.some((item) => item.href?.startsWith("/coach?")), true);
+  assert.equal(items.some((item) => item.href?.match(/month=4/)), true);
+  assert.equal(items.some((item) => item.href?.match(/month=6/)), true);
 });
 
 test("adjacent horoscope months cross year boundaries", () => {
@@ -68,7 +67,7 @@ test("stored birth details can rebuild a chart href", () => {
     {
       birthDateInput: "19900101",
       birthTimeInput: "0930",
-      city: "부산",
+      city: "Seoul",
       country: "KR",
       timeUnknown: false,
       year: 2026

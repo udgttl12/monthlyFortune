@@ -13,9 +13,15 @@ Monthly Fortune is a full-stack astrology project built with Next.js on the fron
 - `/` home page with birth input form
 - `/chart` natal chart result page
 - `/horoscope` personalized yearly overview + monthly detail page
+- `/calendar` AI 30-day action calendar page
+- `/today` AI daily briefing page
+- `/coach` AI decision timing coach page
 - `/api/chart/natal` natal chart API
 - `/api/horoscope/yearly` personalized yearly horoscope API
 - `/api/horoscope/monthly` monthly horoscope API
+- `/api/ai-retention/action-calendar` AI action calendar API
+- `/api/ai-retention/daily-brief` AI daily briefing API
+- `/api/ai-retention/coach` AI timing coach API
 
 ## Local development
 
@@ -43,6 +49,26 @@ export XAI_MODEL=grok-4.20-reasoning
 export XAI_TIMEOUT_SECONDS=45
 ```
 
+AI retention loop provider settings:
+
+```bash
+export LLM_RETENTION_PROVIDER=xai
+export LLM_RETENTION_API_KEY=your_provider_key
+export LLM_RETENTION_MODEL=grok-4.20-reasoning
+export LLM_RETENTION_TIMEOUT_SECONDS=45
+```
+
+The `/coach` page submits from the browser, so set `NEXT_PUBLIC_MONTHLY_FORTUNE_API_URL` to the same backend origin used by `MONTHLY_FORTUNE_API_URL`.
+
+To switch the retention loop to DeepSeek:
+
+```bash
+export LLM_RETENTION_PROVIDER=deepseek
+export LLM_RETENTION_MODEL=deepseek-v4-pro
+```
+
+If `LLM_RETENTION_API_KEY` is empty, `/calendar`, `/today`, and `/coach` fall back to deterministic timing guidance from the transit engine. MariaDB is intentionally not used in v1; add it only when server-side history or cross-device storage is required.
+
 ## Production deployment
 
 The recommended production target is direct deployment on a Linux server with:
@@ -67,5 +93,5 @@ Server deployment assets are included here:
 npm run lint
 npm run build
 npm run test:frontend
-python -m unittest discover -s tests -v
+.venv-root/Scripts/python.exe -m unittest discover -s tests -v
 ```

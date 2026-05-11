@@ -1,5 +1,11 @@
 import type { Route } from "next";
 import {
+  buildCalendarPageHref,
+  buildCoachPageHref,
+  buildTodayPageHref,
+  getTodayInKorea
+} from "@/app/lib/aiRetention";
+import {
   HoroscopeSearchParams,
   buildHoroscopePageHref
 } from "@/app/lib/horoscope";
@@ -98,35 +104,32 @@ export function buildFloatingMenuItems({
 }: FloatingMenuOptions): FloatingMenuItem[] {
   if (page === "home") {
     return [
-      { label: "출생 차트 시작", href: "#birth-details" as Route },
-      { label: "개인 운세 시작", href: "#birth-details" as Route },
-      { label: "최근 본 설정", action: "recent" },
+      { label: "출생 차트 입력", href: "#birth-details" as Route },
+      { label: "최근 결과", action: "recent" },
       { label: "맨 위로", action: "top" }
     ];
   }
 
   if (page === "chart") {
     return [
-      ...(hasCopyText ? [{ label: "ChatGPT용 전체 복사", action: "copy" as const }] : []),
-      { label: "운세 보기", href: buildHoroscopeHref(searchParams, selectedYear) },
+      ...(hasCopyText ? [{ label: "결과 복사", action: "copy" as const }] : []),
+      { label: "월간 운세", href: buildHoroscopeHref(searchParams, selectedYear) },
       { label: "입력 수정", href: "/#birth-details" as Route },
       { label: "맨 위로", action: "top" as const }
     ];
   }
 
   const adjacent = getAdjacentHoroscopeMonths(selectedYear, selectedMonth);
+  const safeSearchParams = searchParams ?? {};
 
   return [
-    ...(hasCopyText ? [{ label: "ChatGPT용 전체 복사", action: "copy" as const }] : []),
-    { label: "출생 차트 보기", href: buildChartPageHref(searchParams) },
-    {
-      label: "이전 달",
-      href: buildHoroscopeHref(searchParams, adjacent.previous.year, adjacent.previous.month)
-    },
-    {
-      label: "다음 달",
-      href: buildHoroscopeHref(searchParams, adjacent.next.year, adjacent.next.month)
-    },
+    ...(hasCopyText ? [{ label: "결과 복사", action: "copy" as const }] : []),
+    { label: "출생 차트", href: buildChartPageHref(safeSearchParams) },
+    { label: "오늘 브리핑", href: buildTodayPageHref(safeSearchParams, getTodayInKorea()) },
+    { label: "액션 캘린더", href: buildCalendarPageHref(safeSearchParams, selectedYear, selectedMonth) },
+    { label: "AI 코치", href: buildCoachPageHref(safeSearchParams, selectedYear, selectedMonth) },
+    { label: "이전 달", href: buildHoroscopeHref(safeSearchParams, adjacent.previous.year, adjacent.previous.month) },
+    { label: "다음 달", href: buildHoroscopeHref(safeSearchParams, adjacent.next.year, adjacent.next.month) },
     { label: "입력 수정", href: "#birth-details" as Route },
     { label: "맨 위로", action: "top" as const }
   ];

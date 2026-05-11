@@ -1,4 +1,5 @@
 import unittest
+from typing import Optional
 
 from app.schemas.horoscope import MonthlyHoroscopeLLMResponse, MonthlyHoroscopeRequest
 from app.services.astrology_service import AstrologyService
@@ -12,14 +13,14 @@ from app.services.transit_engine import TransitEngine
 
 
 class RecordingXAIService:
-    def __init__(self, response: MonthlyHoroscopeLLMResponse | None) -> None:
+    def __init__(self, response: Optional[MonthlyHoroscopeLLMResponse]) -> None:
         self.response = response
         self.calls = 0
         self.enabled = True
         self.model = "test-model"
         self.prompt_version = "test-prompt"
 
-    def enhance_monthly_report(self, *args, **kwargs) -> MonthlyHoroscopeLLMResponse | None:
+    def enhance_monthly_report(self, *args, **kwargs) -> Optional[MonthlyHoroscopeLLMResponse]:
         self.calls += 1
         return self.response
 
