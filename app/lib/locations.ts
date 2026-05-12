@@ -50,6 +50,13 @@ export function getCitiesByCountry(countryCode?: string): LocationOption[] {
   return LOCATION_OPTIONS.filter((option) => option.countryCode === countryCode);
 }
 
+export function getSelectableCity(city: string | undefined, countryCode: string | undefined): string {
+  const cityOptions = getCitiesByCountry(countryCode);
+  const matchedCity = cityOptions.find((option) => option.city.trim() === city?.trim());
+
+  return matchedCity?.city ?? cityOptions[0]?.city ?? "";
+}
+
 export function getLocationOption(city?: string, countryCode?: string): LocationOption | undefined {
   if (!city || !countryCode) {
     return undefined;

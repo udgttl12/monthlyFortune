@@ -1,5 +1,7 @@
 import BirthDetailsForm from "@/components/BirthDetailsForm";
 import CoachPanel from "@/components/CoachPanel";
+import FloatingMenu from "@/components/FloatingMenu";
+import { buildFloatingMenuItems } from "@/app/lib/floatingMenu";
 import {
   HoroscopeSearchParams,
   getSelectedHoroscopeMonth,
@@ -17,6 +19,12 @@ export default function CoachPage({ searchParams }: CoachPageProps) {
   const hasBirthDetails = hasRequiredBirthDetails(searchParams);
   const selectedYear = getSelectedHoroscopeYear(searchParams);
   const selectedMonth = getSelectedHoroscopeMonth(selectedYear, searchParams.month);
+  const floatingMenuItems = buildFloatingMenuItems({
+    page: "retention",
+    searchParams,
+    selectedYear,
+    selectedMonth
+  });
 
   return (
     <div className="stack">
@@ -39,6 +47,8 @@ export default function CoachPage({ searchParams }: CoachPageProps) {
       </section>
 
       {hasBirthDetails ? <CoachPanel searchParams={searchParams} year={selectedYear} month={selectedMonth} /> : null}
+
+      <FloatingMenu items={floatingMenuItems} />
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import { Suspense } from "react";
 import ActionCalendarSections from "@/components/ActionCalendarSections";
 import BirthDetailsForm from "@/components/BirthDetailsForm";
+import FloatingMenu from "@/components/FloatingMenu";
 import Spinner from "@/components/Spinner";
+import { buildFloatingMenuItems } from "@/app/lib/floatingMenu";
 import {
   HoroscopeSearchParams,
   getSelectedHoroscopeMonth,
@@ -19,6 +21,12 @@ export default function CalendarPage({ searchParams }: CalendarPageProps) {
   const hasBirthDetails = hasRequiredBirthDetails(searchParams);
   const selectedYear = getSelectedHoroscopeYear(searchParams);
   const selectedMonth = getSelectedHoroscopeMonth(selectedYear, searchParams.month);
+  const floatingMenuItems = buildFloatingMenuItems({
+    page: "retention",
+    searchParams,
+    selectedYear,
+    selectedMonth
+  });
 
   return (
     <div className="stack">
@@ -45,6 +53,8 @@ export default function CalendarPage({ searchParams }: CalendarPageProps) {
           <ActionCalendarSections searchParams={searchParams} year={selectedYear} month={selectedMonth} />
         </Suspense>
       ) : null}
+
+      <FloatingMenu items={floatingMenuItems} />
     </div>
   );
 }

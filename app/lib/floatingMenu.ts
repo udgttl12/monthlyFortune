@@ -14,7 +14,7 @@ import { parseBirthDateInput } from "@/app/lib/birthDateInput";
 import { parseBirthTimeInput } from "@/app/lib/birthTimeInput";
 import { getDefaultTimezone, getLocationOption } from "@/app/lib/locations";
 
-export type FloatingMenuPage = "home" | "chart" | "horoscope";
+export type FloatingMenuPage = "home" | "chart" | "horoscope" | "retention";
 export type FloatingMenuAction = "copy" | "top" | "recent";
 
 export interface FloatingMenuItem {
@@ -95,6 +95,18 @@ export function buildStoredBirthDetailsHref(
   return `/${target}?${params.toString()}` as Route;
 }
 
+function buildRetentionLinks(
+  searchParams: HoroscopeSearchParams,
+  selectedYear: number,
+  selectedMonth: number
+): FloatingMenuItem[] {
+  return [
+    { label: "오늘 브리핑", href: buildTodayPageHref(searchParams, getTodayInKorea()) },
+    { label: "액션 캘린더", href: buildCalendarPageHref(searchParams, selectedYear, selectedMonth) },
+    { label: "AI 코치", href: buildCoachPageHref(searchParams, selectedYear, selectedMonth) }
+  ];
+}
+
 export function buildFloatingMenuItems({
   page,
   searchParams,
@@ -102,10 +114,12 @@ export function buildFloatingMenuItems({
   selectedYear = new Date().getFullYear(),
   selectedMonth = 1
 }: FloatingMenuOptions): FloatingMenuItem[] {
+  const safeSearchParams = searchParams ?? {};
+
   if (page === "home") {
     return [
-      { label: "출생 차트 입력", href: "#birth-details" as Route },
-      { label: "최근 결과", action: "recent" },
+      { label: "출생 정보 입력", href: "#birth-details" as Route },
+      { label: "최근 차트", action: "recent" },
       { label: "맨 위로", action: "top" }
     ];
   }
@@ -113,21 +127,28 @@ export function buildFloatingMenuItems({
   if (page === "chart") {
     return [
       ...(hasCopyText ? [{ label: "결과 복사", action: "copy" as const }] : []),
-      { label: "월간 운세", href: buildHoroscopeHref(searchParams, selectedYear) },
+      { label: "월간 운세", href: buildHoroscopeHref(safeSearchParams, selectedYear) },
       { label: "입력 수정", href: "/#birth-details" as Route },
       { label: "맨 위로", action: "top" as const }
     ];
   }
 
+  if (page === "retention") {
+    return [
+      { label: "출생 차트", href: buildChartPageHref(safeSearchParams) },
+      { label: "월간 운세", href: buildHoroscopeHref(safeSearchParams, selectedYear, selectedMonth) },
+      ...buildRetentionLinks(safeSearchParams, selectedYear, selectedMonth),
+      { label: "입력 수정", href: "#birth-details" as Route },
+      { label: "맨 위로", action: "top" as const }
+    ];
+  }
+
   const adjacent = getAdjacentHoroscopeMonths(selectedYear, selectedMonth);
-  const safeSearchParams = searchParams ?? {};
 
   return [
     ...(hasCopyText ? [{ label: "결과 복사", action: "copy" as const }] : []),
     { label: "출생 차트", href: buildChartPageHref(safeSearchParams) },
-    { label: "오늘 브리핑", href: buildTodayPageHref(safeSearchParams, getTodayInKorea()) },
-    { label: "액션 캘린더", href: buildCalendarPageHref(safeSearchParams, selectedYear, selectedMonth) },
-    { label: "AI 코치", href: buildCoachPageHref(safeSearchParams, selectedYear, selectedMonth) },
+    ...buildRetentionLinks(safeSearchParams, selectedYear, selectedMonth),
     { label: "이전 달", href: buildHoroscopeHref(safeSearchParams, adjacent.previous.year, adjacent.previous.month) },
     { label: "다음 달", href: buildHoroscopeHref(safeSearchParams, adjacent.next.year, adjacent.next.month) },
     { label: "입력 수정", href: "#birth-details" as Route },

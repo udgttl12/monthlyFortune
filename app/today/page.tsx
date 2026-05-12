@@ -1,8 +1,10 @@
 import { Suspense } from "react";
 import BirthDetailsForm from "@/components/BirthDetailsForm";
 import DailyBriefSections from "@/components/DailyBriefSections";
+import FloatingMenu from "@/components/FloatingMenu";
 import Spinner from "@/components/Spinner";
 import { AiRetentionSearchParams, getTodayInKorea } from "@/app/lib/aiRetention";
+import { buildFloatingMenuItems } from "@/app/lib/floatingMenu";
 import {
   getSelectedHoroscopeMonth,
   getSelectedHoroscopeYear,
@@ -22,6 +24,12 @@ export default function TodayPage({ searchParams }: TodayPageProps) {
   const selectedMonth = searchParams.month
     ? getSelectedHoroscopeMonth(selectedYear, searchParams.month)
     : Number(targetDate.slice(5, 7));
+  const floatingMenuItems = buildFloatingMenuItems({
+    page: "retention",
+    searchParams,
+    selectedYear,
+    selectedMonth
+  });
 
   return (
     <div className="stack">
@@ -53,6 +61,8 @@ export default function TodayPage({ searchParams }: TodayPageProps) {
           />
         </Suspense>
       ) : null}
+
+      <FloatingMenu items={floatingMenuItems} />
     </div>
   );
 }

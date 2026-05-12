@@ -9,7 +9,7 @@
     "start": "next start",
     "start:prod": "next start --hostname 127.0.0.1 --port 3000",
     "lint": "next lint",
-    "test:frontend": "node --import tsx --test app/lib/horoscope.test.ts app/lib/birthDateInput.test.ts app/lib/birthTimeInput.test.ts app/lib/birthDetailsStorage.test.ts app/lib/resultText.test.ts app/lib/floatingMenu.test.ts app/lib/aiRetention.test.ts app/lib/aiRetentionStorage.test.ts"
+    "test:frontend": "node --import tsx --test app/lib/horoscope.test.ts app/lib/birthDateInput.test.ts app/lib/birthTimeInput.test.ts app/lib/birthDetailsStorage.test.ts app/lib/locations.test.ts app/lib/resultText.test.ts app/lib/floatingMenu.test.ts app/lib/aiRetention.test.ts app/lib/aiRetentionStorage.test.ts"
   },
   "dependencies": {
     "next": "14.2.5",

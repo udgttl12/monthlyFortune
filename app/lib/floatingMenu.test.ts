@@ -17,7 +17,7 @@ const birthSearchParams = {
   month: "5"
 };
 
-test("chart floating menu puts copy first and links to horoscope with current birth details", () => {
+test("chart floating menu puts copy first and links to horoscope with readable labels", () => {
   const items = buildFloatingMenuItems({
     page: "chart",
     searchParams: birthSearchParams,
@@ -34,7 +34,7 @@ test("chart floating menu puts copy first and links to horoscope with current bi
   assert.match(items[1].href ?? "", /country=KR/);
 });
 
-test("horoscope floating menu includes ai retention and adjacent month links", () => {
+test("horoscope floating menu uses readable Korean labels and includes retention links", () => {
   const items = buildFloatingMenuItems({
     page: "horoscope",
     searchParams: birthSearchParams,
@@ -43,11 +43,31 @@ test("horoscope floating menu includes ai retention and adjacent month links", (
     hasCopyText: true
   });
 
+  assert.deepEqual(
+    items.map((item) => item.label),
+    ["결과 복사", "출생 차트", "오늘 브리핑", "액션 캘린더", "AI 코치", "이전 달", "다음 달", "입력 수정", "맨 위로"]
+  );
   assert.equal(items.some((item) => item.href?.startsWith("/today?")), true);
   assert.equal(items.some((item) => item.href?.startsWith("/calendar?")), true);
   assert.equal(items.some((item) => item.href?.startsWith("/coach?")), true);
   assert.equal(items.some((item) => item.href?.match(/month=4/)), true);
   assert.equal(items.some((item) => item.href?.match(/month=6/)), true);
+});
+
+test("retention pages keep the main navigation visible", () => {
+  const items = buildFloatingMenuItems({
+    page: "retention",
+    searchParams: birthSearchParams,
+    selectedYear: 2026,
+    selectedMonth: 5
+  });
+
+  assert.deepEqual(
+    items.map((item) => item.label),
+    ["출생 차트", "월간 운세", "오늘 브리핑", "액션 캘린더", "AI 코치", "입력 수정", "맨 위로"]
+  );
+  assert.equal(items.some((item) => item.href?.startsWith("/horoscope?")), true);
+  assert.equal(items.some((item) => item.href?.startsWith("/calendar?")), true);
 });
 
 test("adjacent horoscope months cross year boundaries", () => {

@@ -33,6 +33,10 @@ function fallbackCopy(text: string) {
   }
 }
 
+function isUtilityItem(item: FloatingMenuItem) {
+  return item.action === "copy" || item.action === "recent" || item.action === "top";
+}
+
 export default function FloatingMenu({ items, copyText = "" }: FloatingMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [copyState, setCopyState] = useState<CopyState>("idle");
@@ -81,47 +85,67 @@ export default function FloatingMenu({ items, copyText = "" }: FloatingMenuProps
     setIsOpen(false);
   }
 
+  function getLabel(item: FloatingMenuItem) {
+    if (item.action === "copy" && copyState === "copied") {
+      return "복사 완료";
+    }
+
+    if (item.action === "copy" && copyState === "error") {
+      return "복사 실패";
+    }
+
+    return item.label;
+  }
+
+  function renderItem(item: FloatingMenuItem) {
+    const label = getLabel(item);
+    const href = item.action === "recent" ? recentHref : item.href;
+
+    if (href) {
+      return (
+        <Link
+          key={`${item.label}-${href}`}
+          className={`floating-menu-item${isUtilityItem(item) ? " utility" : ""}`}
+          href={href}
+          onClick={() => handleItemClick(item)}
+        >
+          {label}
+        </Link>
+      );
+    }
+
+    return (
+      <button
+        key={item.label}
+        className={`floating-menu-item${isUtilityItem(item) ? " utility" : ""}`}
+        type="button"
+        onClick={() => handleItemClick(item)}
+      >
+        {label}
+      </button>
+    );
+  }
+
   const visibleItems = items.filter((item) => item.action !== "recent" || recentHref);
+  const primaryItems = visibleItems.filter((item) => !isUtilityItem(item));
+  const utilityItems = visibleItems.filter(isUtilityItem);
 
   return (
     <nav className="floating-menu" aria-label="빠른 메뉴">
-      {isOpen ? (
-        <div id="floating-menu-panel" className="floating-menu-panel open">
-          {visibleItems.map((item) => {
-            const label =
-              item.action === "copy" && copyState === "copied"
-                ? "복사 완료"
-                : item.action === "copy" && copyState === "error"
-                  ? "복사 실패"
-                  : item.label;
-            const href = item.action === "recent" ? recentHref : item.href;
-
-            if (href) {
-              return (
-                <Link
-                  key={`${item.label}-${href}`}
-                  className="floating-menu-item"
-                  href={href}
-                  onClick={() => handleItemClick(item)}
-                >
-                  {label}
-                </Link>
-              );
-            }
-
-            return (
-              <button
-                key={item.label}
-                className="floating-menu-item"
-                type="button"
-                onClick={() => handleItemClick(item)}
-              >
-                {label}
-              </button>
-            );
-          })}
+      <div id="floating-menu-panel" className={`floating-menu-panel${isOpen ? " open" : ""}`}>
+        <div className="floating-menu-header">
+          <span>빠른 메뉴</span>
+          <small>자주 쓰는 화면</small>
         </div>
-      ) : null}
+
+        {primaryItems.length > 0 ? (
+          <div className="floating-menu-section primary">{primaryItems.map(renderItem)}</div>
+        ) : null}
+
+        {utilityItems.length > 0 ? (
+          <div className="floating-menu-section utility">{utilityItems.map(renderItem)}</div>
+        ) : null}
+      </div>
 
       <button
         className="floating-menu-toggle"

@@ -95,3 +95,22 @@ npm run build
 npm run test:frontend
 .venv-root/Scripts/python.exe -m unittest discover -s tests -v
 ```
+
+## Codex commit helper
+
+On Windows, use the repository wrapper so Codex can stage the intended files,
+generate a concise commit message, commit, and push the current branch with one
+stable command:
+
+```bat
+codex-commit-push.bat
+```
+
+Useful options:
+
+```bat
+codex-commit-push.bat -DryRun
+codex-commit-push.bat -Message "Improve navigation menu"
+codex-commit-push.bat -PushBranch main
+codex-commit-push.bat -NoPush
+```

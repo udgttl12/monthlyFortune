@@ -8,7 +8,8 @@ import {
   COUNTRY_OPTIONS,
   getCitiesByCountry,
   getDefaultTimezone,
-  getLocationOption
+  getLocationOption,
+  getSelectableCity
 } from "@/app/lib/locations";
 
 interface BirthDetailsFormProps {
@@ -29,7 +30,7 @@ export default function BirthDetailsForm({
   defaultYear = new Date().getFullYear()
 }: BirthDetailsFormProps) {
   const [country, setCountry] = useState("KR");
-  const [city, setCity] = useState("서울");
+  const [city, setCity] = useState(() => getSelectableCity(undefined, "KR"));
   const [birthDateInput, setBirthDateInput] = useState("");
   const [birthDateSubmitError, setBirthDateSubmitError] = useState("");
   const [birthTimeInput, setBirthTimeInput] = useState("1200");
@@ -49,7 +50,6 @@ export default function BirthDetailsForm({
   const cityOptions = getCitiesByCountry(country);
   const matchedLocation = getLocationOption(city, country);
   const timezone = matchedLocation?.timezone ?? getDefaultTimezone(country);
-  const isKnownCity = matchedLocation !== undefined;
 
   useEffect(() => {
     const stored = readLastViewedBirthDetails(window.localStorage);
@@ -65,7 +65,7 @@ export default function BirthDetailsForm({
     setBirthDateInput(stored.birthDateInput);
     setBirthTimeInput(stored.birthTimeInput || "1200");
     setCountry(storedCountry);
-    setCity(stored.city || getCitiesByCountry(storedCountry)[0]?.city || "서울");
+    setCity(getSelectableCity(stored.city, storedCountry));
     setTimeUnknown(stored.timeUnknown);
     setYear(stored.year);
   }, []);
@@ -82,10 +82,13 @@ export default function BirthDetailsForm({
 
   function handleCountryChange(event: ChangeEvent<HTMLSelectElement>) {
     const nextCountry = event.target.value;
-    const nextCity = getCitiesByCountry(nextCountry)[0]?.city ?? "";
 
     setCountry(nextCountry);
-    setCity(nextCity);
+    setCity(getSelectableCity(undefined, nextCountry));
+  }
+
+  function handleCityChange(event: ChangeEvent<HTMLSelectElement>) {
+    setCity(event.target.value);
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -135,7 +138,7 @@ export default function BirthDetailsForm({
       <div className="field-card full-width">
         <h3>1. 생년월일</h3>
         <p className="helper-text">
-          입력한 날짜와 시간은 선택한 도시의 표준시 기준으로 해석한 뒤 차트와 운세 계산에 사용합니다.
+          날짜와 시간은 개인 차트 계산의 기준입니다. 생년월일은 숫자 8자리로 입력해 주세요.
         </p>
         <div className="field-grid">
           <label>
@@ -166,7 +169,7 @@ export default function BirthDetailsForm({
 
           {showYearField ? (
             <label>
-              조회 연도
+              확인할 연도
               <input
                 type="number"
                 name="year"
@@ -186,17 +189,16 @@ export default function BirthDetailsForm({
       <div className="field-card">
         <h3>2. 출생 시간</h3>
         <p className="helper-text">
-          시간을 모르면 정오 12:00 기준으로 계산합니다. 이 경우 ASC와 하우스, 날짜 단위 운세는 참고용으로
-          보는 편이 좋습니다.
+          시간을 모르면 12:00 기준으로 계산합니다. 다만 상승궁과 하우스 해석은 실제 시간에 가까울수록 더 정확합니다.
         </p>
 
         <label className="checkbox-row">
-            <input
-              type="checkbox"
-              checked={timeUnknown}
-              onChange={handleTimeUnknownChange}
-            />
-          출생 시간을 정확히 모름
+          <input
+            type="checkbox"
+            checked={timeUnknown}
+            onChange={handleTimeUnknownChange}
+          />
+          출생 시간을 모릅니다
         </label>
 
         <input type="hidden" name="birthTime" value={birthTime} />
@@ -232,7 +234,7 @@ export default function BirthDetailsForm({
       <div className="field-card">
         <h3>3. 국가와 도시</h3>
         <p className="helper-text">
-          주요 도시는 timezone을 바로 적용하고, 목록에 없는 도시는 백엔드가 좌표와 timezone을 다시 계산합니다.
+          국가를 선택하면 해당 국가의 등록 도시만 고를 수 있습니다. 도시별 timezone은 자동으로 함께 전달됩니다.
         </p>
 
         <label>
@@ -248,33 +250,21 @@ export default function BirthDetailsForm({
 
         <label>
           도시
-          <input
-            type="text"
-            name="city"
-            list="city-options"
-            value={city}
-            onChange={(event) => setCity(event.target.value)}
-            placeholder="예: 서울, 부산, Tokyo"
-            required
-          />
-          <datalist id="city-options">
+          <select name="city" value={city} onChange={handleCityChange} required>
             {cityOptions.map((option) => (
               <option key={`${option.countryCode}-${option.city}`} value={option.city}>
-                {option.note}
+                {option.city} · {option.note}
               </option>
             ))}
-          </datalist>
+          </select>
         </label>
 
-        {isKnownCity ? <input type="hidden" name="timezone" value={timezone} /> : null}
+        <input type="hidden" name="timezone" value={timezone} />
 
         <div className="note-box">
-          <strong>{isKnownCity ? "현재 적용 timezone:" : "직접 입력 도시 처리:"}</strong>{" "}
-          {isKnownCity ? timezone : "백엔드에서 좌표와 timezone을 다시 계산합니다."}
+          <strong>선택 도시 기준 timezone:</strong> {timezone}
           <br />
-          {isKnownCity
-            ? "자주 쓰는 도시는 고정 timezone을 적용해 더 안정적으로 처리합니다."
-            : "도시명이 정확할수록 차트와 운세 결과가 좋아집니다."}
+          목록에 필요한 도시가 없으면 이후 등록 도시 목록에 추가할 수 있습니다.
         </div>
       </div>
 
