@@ -177,5 +177,9 @@ if ($NoPush) {
 
 $targetBranchName = if ([string]::IsNullOrWhiteSpace($PushBranch)) { $branch } else { $PushBranch }
 Write-Host "Pushing to $Remote HEAD:$targetBranchName"
-Invoke-Git @("push", $Remote, "HEAD:$targetBranchName")
+if ([string]::IsNullOrWhiteSpace($PushBranch) -or $PushBranch -eq $branch) {
+  Invoke-Git @("push", "--set-upstream", $Remote, "HEAD:$targetBranchName")
+} else {
+  Invoke-Git @("push", $Remote, "HEAD:$targetBranchName")
+}
 Invoke-Git @("ls-remote", "--heads", $Remote, $targetBranchName)
