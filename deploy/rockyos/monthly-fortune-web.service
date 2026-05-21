@@ -4,8 +4,8 @@ After=network.target monthly-fortune-api.service
 
 [Service]
 Type=simple
-User=ec2-user
-Group=ec2-user
+User=opc
+Group=opc
 WorkingDirectory=/var/www/python/monthlyFortune
 Environment=NODE_ENV=production
 EnvironmentFile=-/var/www/python/monthlyFortune/.env.production

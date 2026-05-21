@@ -1,4 +1,4 @@
-name: Deploy to RockyOS
+name: Deploy to OCI
 
 on:
   push:
@@ -20,6 +20,8 @@ jobs:
     environment: production
     env:
       DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_USER: opc
+      DEPLOY_PATH: /var/www/python/monthlyFortune
     steps:
       - name: Validate deployment configuration
         env:
@@ -29,17 +31,17 @@ jobs:
           missing=0
 
           if [ -z "${DEPLOY_HOST:-}" ]; then
-            echo "::error title=Missing DEPLOY_HOST::Set the production environment secret DEPLOY_HOST to donggyu.link."
+            echo "::error title=Missing DEPLOY_HOST::Set the production environment secret DEPLOY_HOST to the OCI host or the DNS name that points to it."
             missing=1
           fi
 
           if [ -z "${DEPLOY_SSH_KEY:-}" ]; then
-            echo "::error title=Missing DEPLOY_SSH_KEY::Set the production environment secret DEPLOY_SSH_KEY to the ec2-user private key."
+            echo "::error title=Missing DEPLOY_SSH_KEY::Set the production environment secret DEPLOY_SSH_KEY to the OCI opc private key."
             missing=1
           fi
 
           if [ -z "${DEPLOY_KNOWN_HOSTS:-}" ]; then
-            echo "::error title=Missing DEPLOY_KNOWN_HOSTS::Set the production environment secret DEPLOY_KNOWN_HOSTS to the ssh-keyscan output for donggyu.link."
+            echo "::error title=Missing DEPLOY_KNOWN_HOSTS::Set the production environment secret DEPLOY_KNOWN_HOSTS to the ssh-keyscan output for the OCI deploy host."
             missing=1
           fi
 
@@ -104,7 +106,7 @@ jobs:
       - name: Sync repository to server
         run: |
           rsync -az --delete \
-            --rsync-path "mkdir -p /var/www/python/monthlyFortune && rsync" \
+            --rsync-path "mkdir -p ${DEPLOY_PATH} && rsync" \
             --exclude '.git/' \
             --exclude '.github/' \
             --exclude '.next/cache/' \
@@ -118,27 +120,28 @@ jobs:
             --exclude 'live-frontend.log' \
             --exclude '.env.production' \
             -e "ssh -p 22 -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10" \
-            ./ "ec2-user@${DEPLOY_HOST}:/var/www/python/monthlyFortune/"
+            ./ "${DEPLOY_USER}@${DEPLOY_HOST}:${DEPLOY_PATH}/"
 
-      - name: Build and restart application services on server
+      - name: Install runtime dependencies and restart services
         run: |
-          ssh -p 22 -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 "ec2-user@${DEPLOY_HOST}" bash -s <<'EOF'
+          ssh -p 22 -o BatchMode=yes -o ConnectTimeout=20 -o ServerAliveInterval=30 -o ServerAliveCountMax=10 "${DEPLOY_USER}@${DEPLOY_HOST}" bash -s <<'EOF'
           set -euo pipefail
           cd /var/www/python/monthlyFortune
           RUN_TESTS=0 FRONTEND_INSTALL=0 FRONTEND_BUILD=0 RESTART_SERVICES=0 SYSTEMD_RELOAD=0 bash scripts/deploy-rockyos.sh
 
-          if [ "$(id -u)" -eq 0 ]; then
-            SUDO=()
-          else
-            SUDO=(sudo -n)
-          fi
+          sudo -n systemctl restart monthly-fortune-api
+          sudo -n systemctl restart monthly-fortune-web
 
-          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-api.service /etc/systemd/system/monthly-fortune-api.service
-          "${SUDO[@]}" install -m 644 deploy/rockyos/monthly-fortune-web.service /etc/systemd/system/monthly-fortune-web.service
-          "${SUDO[@]}" systemctl daemon-reload
-          "${SUDO[@]}" systemctl enable monthly-fortune-api
-          "${SUDO[@]}" systemctl enable monthly-fortune-web
-          "${SUDO[@]}" systemctl restart monthly-fortune-api
-          "${SUDO[@]}" systemctl restart monthly-fortune-web
-
+          for url in http://127.0.0.1:8000/docs http://127.0.0.1:3000; do
+            for attempt in {1..12}; do
+              if curl -fsS "$url" >/dev/null; then
+                break
+              fi
+              if [ "$attempt" -eq 12 ]; then
+                echo "::error title=Health check failed::$url did not become ready."
+                exit 1
+              fi
+              sleep 2
+            done
+          done
           EOF

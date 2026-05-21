@@ -1,6 +1,6 @@
-# RockyOS Deployment
+# OCI Oracle Linux Deployment
 
-This project is set up for direct deployment on a RockyOS server with `nginx`, `systemd`, Next.js, and FastAPI.
+This project is set up for direct deployment on an OCI Oracle Linux server with `nginx`, `systemd`, Next.js, and FastAPI.
 
 ## Runtime layout
 
@@ -14,15 +14,15 @@ This project is set up for direct deployment on a RockyOS server with `nginx`, `
 
 ```bash
 sudo dnf update -y
-sudo dnf install -y git nginx python3 python3-pip nodejs rsync
+sudo dnf install -y nginx python3 python3-pip nodejs rsync
 ```
 
-If your RockyOS image ships an older Node.js, install Node.js 20 before building the frontend.
+Install Node.js 20 or newer before building the frontend.
 
 ## 2. Create an app user
 
 ```bash
-sudo install -d -m 755 -o ec2-user -g ec2-user /var/www/python/monthlyFortune
+sudo install -d -m 755 -o opc -g opc /var/www/python/monthlyFortune
 ```
 
 ## 3. Clone the project
@@ -66,7 +66,7 @@ For the very first deploy, the script automatically skips service restarts until
 
 ## 6. Install systemd units
 
-Copy the template files. They assume `/var/www/python/monthlyFortune` and `ec2-user`.
+Copy the template files. The OCI server should run them as `opc`.
 
 ```bash
 sudo cp deploy/rockyos/monthly-fortune-api.service /etc/systemd/system/
@@ -133,7 +133,7 @@ bash scripts/deploy-rockyos.sh
 
 ## GitHub Actions deployment
 
-After the server is bootstrapped once, GitHub Actions can handle the regular deploys.
+After the server is bootstrapped once, GitHub Actions handles regular deploys only. It syncs the app, installs Python runtime dependencies, restarts the existing services, and runs localhost health checks. It does not install or enable systemd units and does not change nginx.
 
 Workflow file:
 
@@ -145,22 +145,22 @@ Create a GitHub Actions environment named `production`.
 
 Add these environment secrets:
 
-- `DEPLOY_HOST`: `donggyu.link`
-- `DEPLOY_SSH_KEY`: the private key for `ec2-user`
-- `DEPLOY_KNOWN_HOSTS`: output of `ssh-keyscan -H donggyu.link`
+- `DEPLOY_HOST`: the OCI host IP or a DNS name that already points to it
+- `DEPLOY_SSH_KEY`: the private key for `opc`
+- `DEPLOY_KNOWN_HOSTS`: output of `ssh-keyscan -H <DEPLOY_HOST>`
 
-The workflow deploys as `ec2-user` to `/var/www/python/monthlyFortune`.
+The workflow deploys as `opc` to `/var/www/python/monthlyFortune`.
 
 It connects over SSH port `22` and scans the server host key during deployment.
 
 ### Deploy user permissions
 
-If the deploy user is not `root`, it must be able to restart the services without an interactive password prompt.
+The `opc` user must be able to restart the services without an interactive password prompt.
 
 Example sudoers entry:
 
 ```text
-ec2-user ALL=NOPASSWD:/usr/bin/install,/usr/sbin/nginx,/usr/bin/systemctl daemon-reload,/usr/bin/systemctl enable monthly-fortune-api,/usr/bin/systemctl enable monthly-fortune-web,/usr/bin/systemctl enable nginx,/usr/bin/systemctl restart monthly-fortune-api,/usr/bin/systemctl restart monthly-fortune-web,/usr/bin/systemctl reload nginx
+opc ALL=NOPASSWD:/usr/bin/systemctl restart monthly-fortune-api,/usr/bin/systemctl restart monthly-fortune-web
 ```
 
 Create it with:
@@ -172,9 +172,10 @@ sudo visudo -f /etc/sudoers.d/monthly-fortune-deploy
 ### How the workflow deploys
 
 1. GitHub Actions runs lint, build, and Python tests on `ubuntu-latest`.
-2. If CI passes, it syncs the repository to the RockyOS server with `rsync`.
-3. It runs `scripts/deploy-rockyos.sh` on the server.
-4. It reloads `systemd`, restarts the app services, and reloads `nginx`.
+2. If CI passes, it syncs the repository to the OCI server with `rsync`.
+3. It runs `scripts/deploy-rockyos.sh` on the server with tests and frontend rebuild disabled.
+4. It restarts `monthly-fortune-api` and `monthly-fortune-web`.
+5. It checks `http://127.0.0.1:8000/docs` and `http://127.0.0.1:3000` on the server.
 
 ## Notes
 
