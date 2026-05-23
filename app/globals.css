@@ -269,6 +269,13 @@ button.preset-chip {
   justify-content: flex-end;
 }
 
+.horoscope-result-hero {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+}
+
 .copy-results-button {
   min-width: 10.5rem;
   min-height: 2.75rem;
@@ -439,6 +446,11 @@ button.preset-chip {
   line-height: 1.5;
 }
 
+.section-description {
+  margin-bottom: 0.9rem;
+  line-height: 1.55;
+}
+
 .info-grid {
   display: grid;
   gap: 1rem;
@@ -513,6 +525,42 @@ button.preset-chip {
   display: grid;
   gap: 0.9rem;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.compact-month-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.monthly-highlight {
+  border-color: rgba(242, 185, 75, 0.28);
+  background: linear-gradient(180deg, rgba(72, 55, 24, 0.48), var(--card));
+}
+
+.horoscope-summary-strip {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.horoscope-summary-strip div {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.horoscope-summary-strip span {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.horoscope-summary-strip strong {
+  color: var(--text);
+  line-height: 1.35;
 }
 
 .month-card {
@@ -738,6 +786,18 @@ button.preset-chip {
   gap: 1rem;
 }
 
+.auth-form,
+.account-panel {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-success,
+.account-email {
+  color: var(--accent-strong);
+  font-weight: 700;
+}
+
 .coach-form textarea {
   min-height: 140px;
   resize: vertical;
@@ -836,7 +896,9 @@ button.preset-chip {
 
   .field-grid,
   .info-grid,
-  .two-column-grid {
+  .two-column-grid,
+  .horoscope-summary-strip,
+  .horoscope-result-hero {
     grid-template-columns: 1fr;
   }
 

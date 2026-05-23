@@ -16,6 +16,7 @@ from app.services.geocoding_service import GeocodingService, LocationResolutionE
 from app.services.horoscope_service import HoroscopeService
 from app.services.interpretation_engine import InterpretationEngine
 from app.services.natal_chart_engine import NatalChartEngine
+from app.services.persistent_cache import PersistentCache
 from app.services.transit_engine import TransitEngine
 from app.services.xai_service import XAIService
 
@@ -37,6 +38,7 @@ horoscope_service = HoroscopeService(
     monthly_cache=TTLCache(ttl_seconds=7 * 24 * 60 * 60),
     analysis_cache=TTLCache(ttl_seconds=7 * 24 * 60 * 60),
     xai_service=XAIService(),
+    persistent_cache=PersistentCache.from_env(),
 )
 
 

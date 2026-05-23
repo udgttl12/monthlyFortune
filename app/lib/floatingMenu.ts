@@ -107,6 +107,13 @@ function buildRetentionLinks(
   ];
 }
 
+function buildAccountLinks(): FloatingMenuItem[] {
+  return [
+    { label: "내 계정", href: "/account" as Route },
+    { label: "로그인", href: "/login" as Route }
+  ];
+}
+
 export function buildFloatingMenuItems({
   page,
   searchParams,
@@ -120,6 +127,7 @@ export function buildFloatingMenuItems({
     return [
       { label: "출생 정보 입력", href: "#birth-details" as Route },
       { label: "최근 차트", action: "recent" },
+      ...buildAccountLinks(),
       { label: "맨 위로", action: "top" }
     ];
   }
@@ -128,6 +136,7 @@ export function buildFloatingMenuItems({
     return [
       ...(hasCopyText ? [{ label: "결과 복사", action: "copy" as const }] : []),
       { label: "월간 운세", href: buildHoroscopeHref(safeSearchParams, selectedYear) },
+      ...buildAccountLinks(),
       { label: "입력 수정", href: "/#birth-details" as Route },
       { label: "맨 위로", action: "top" as const }
     ];
@@ -138,6 +147,7 @@ export function buildFloatingMenuItems({
       { label: "출생 차트", href: buildChartPageHref(safeSearchParams) },
       { label: "월간 운세", href: buildHoroscopeHref(safeSearchParams, selectedYear, selectedMonth) },
       ...buildRetentionLinks(safeSearchParams, selectedYear, selectedMonth),
+      ...buildAccountLinks(),
       { label: "입력 수정", href: "#birth-details" as Route },
       { label: "맨 위로", action: "top" as const }
     ];
@@ -151,6 +161,7 @@ export function buildFloatingMenuItems({
     ...buildRetentionLinks(safeSearchParams, selectedYear, selectedMonth),
     { label: "이전 달", href: buildHoroscopeHref(safeSearchParams, adjacent.previous.year, adjacent.previous.month) },
     { label: "다음 달", href: buildHoroscopeHref(safeSearchParams, adjacent.next.year, adjacent.next.month) },
+    ...buildAccountLinks(),
     { label: "입력 수정", href: "#birth-details" as Route },
     { label: "맨 위로", action: "top" as const }
   ];

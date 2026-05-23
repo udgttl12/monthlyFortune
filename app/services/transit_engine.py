@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from statistics import fmean
 from typing import Final, Optional, Tuple
 from zoneinfo import ZoneInfo
@@ -29,7 +29,7 @@ ASPECT_LABELS: Final[dict[str, str]] = {
     "Sextile": "섹스타일",
     "Square": "스퀘어",
     "Trine": "트라인",
-    "Opposition": "충",
+    "Opposition": "대립",
 }
 
 ASPECT_ORBS: Final[dict[str, float]] = {
@@ -307,14 +307,11 @@ class TransitEngine:
         dominant_theme: str,
         tone: str,
     ) -> str:
-        if tone == "supportive":
-            motion = "부드럽게 밀어주는"
-        else:
-            motion = "긴장을 만들며 조율을 요구하는"
-
+        motion = "힘을 실어주는" if tone == "supportive" else "속도 조절을 요구하는"
         return (
-            f"{POINT_LABELS[transit_name]}이 {POINT_LABELS[natal_name]}과 {ASPECT_LABELS[aspect_name]}을 이루며 "
-            f"{THEME_LABELS[dominant_theme]} 흐름에 {motion} 신호를 만듭니다."
+            f"{POINT_LABELS[transit_name]}이 {POINT_LABELS[natal_name]}과 "
+            f"{ASPECT_LABELS[aspect_name]}을 이루며 {THEME_LABELS[dominant_theme]} 흐름에 "
+            f"{motion} 신호를 만듭니다."
         )
 
     def _build_natal_target_map(self, natal_chart: NatalChartResponse) -> dict[str, float]:
@@ -357,15 +354,15 @@ class TransitEngine:
 
     def _build_title(self, top_theme_key: str, total_score: float, intensity_score: int) -> str:
         if total_score >= 6:
-            mood = "확장이 두드러지는"
+            mood = "확장하기 좋은"
         elif total_score >= 0:
-            mood = "정비가 잘 먹히는"
+            mood = "정리하며 키우는"
         elif intensity_score >= 8:
             mood = "집중 조율이 필요한"
         else:
             mood = "균형을 다시 잡는"
 
-        return f"{THEME_LABELS[top_theme_key]} {mood} 달"
+        return f"{THEME_LABELS[top_theme_key]}를 {mood} 달"
 
     def _select_window(
         self,

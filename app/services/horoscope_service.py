@@ -11,6 +11,7 @@ from app.services.astrology_service import AstrologyService
 from app.services.cache import TTLCache
 from app.services.chart_engine import ChartEngine
 from app.services.interpretation_engine import InterpretationEngine
+from app.services.persistent_cache import PersistentCache
 from app.services.transit_engine import MonthlyTransitAnalysis, TransitEngine
 from app.services.xai_service import XAIService
 
@@ -26,6 +27,7 @@ class HoroscopeService:
         monthly_cache: TTLCache,
         analysis_cache: TTLCache,
         xai_service: Optional[XAIService] = None,
+        persistent_cache: Optional[PersistentCache] = None,
     ) -> None:
         self.astrology_service = astrology_service
         self.chart_engine = chart_engine
@@ -35,6 +37,7 @@ class HoroscopeService:
         self.monthly_cache = monthly_cache
         self.analysis_cache = analysis_cache
         self.xai_service = xai_service or XAIService()
+        self.persistent_cache = persistent_cache
         self.analysis_version = "horoscope-analysis-v1"
 
     def yearly_horoscope(self, request: YearlyHoroscopeRequest) -> YearlyHoroscopeResponse:
@@ -42,6 +45,10 @@ class HoroscopeService:
         cached = self.yearly_cache.get(cache_key)
         if cached is not None:
             return YearlyHoroscopeResponse(**cached)
+        persistent = self._persistent_get("horoscope_yearly", cache_key)
+        if persistent is not None:
+            self.yearly_cache.set(cache_key, persistent)
+            return YearlyHoroscopeResponse(**persistent)
 
         context = self.astrology_service.build_birth_context(self._to_chart_request(request))
         profile = self.chart_engine.build_natal_profile(context.natal_chart)
@@ -54,7 +61,9 @@ class HoroscopeService:
             profile=profile,
             monthly_analyses=analyses,
         )
-        self.yearly_cache.set(cache_key, response.model_dump(by_alias=True))
+        payload = response.model_dump(mode="json", by_alias=True)
+        self.yearly_cache.set(cache_key, payload)
+        self._persistent_set("horoscope_yearly", cache_key, payload)
         return response
 
     def monthly_horoscope(self, request: MonthlyHoroscopeRequest) -> MonthlyHoroscopeResponse:
@@ -62,6 +71,10 @@ class HoroscopeService:
         cached = self.monthly_cache.get(cache_key)
         if cached is not None:
             return MonthlyHoroscopeResponse(**cached)
+        persistent = self._persistent_get("horoscope_monthly", cache_key)
+        if persistent is not None:
+            self.monthly_cache.set(cache_key, persistent)
+            return MonthlyHoroscopeResponse(**persistent)
 
         context = self.astrology_service.build_birth_context(self._to_chart_request(request))
         profile = self.chart_engine.build_natal_profile(context.natal_chart)
@@ -84,8 +97,20 @@ class HoroscopeService:
             },
         )
         response = self.interpretation_engine.apply_llm_enhancement(fallback, enhancement)
-        self.monthly_cache.set(cache_key, response.model_dump(by_alias=True))
+        payload = response.model_dump(mode="json", by_alias=True)
+        self.monthly_cache.set(cache_key, payload)
+        self._persistent_set("horoscope_monthly", cache_key, payload)
         return response
+
+    def _persistent_get(self, namespace: str, cache_key: str):
+        if self.persistent_cache is None:
+            return None
+        return self.persistent_cache.get(namespace, cache_key)
+
+    def _persistent_set(self, namespace: str, cache_key: str, payload: dict) -> None:
+        if self.persistent_cache is None:
+            return
+        self.persistent_cache.set(namespace, cache_key, payload)
 
     def _get_monthly_analysis(
         self,

@@ -99,7 +99,7 @@ interface HoroscopeResultTextOptions {
 
 export function formatBirthDate(value?: string) {
   if (!value) {
-    return "입력되지 않음";
+    return "입력하지 않음";
   }
 
   return value.replaceAll("-", ".");
@@ -107,7 +107,7 @@ export function formatBirthDate(value?: string) {
 
 export function formatBirthTime(value?: string, timeUnknown?: string) {
   if (!value) {
-    return "입력되지 않음";
+    return "입력하지 않음";
   }
 
   if (timeUnknown === "true") {
@@ -168,7 +168,7 @@ export function buildChartResultText({ searchParams, data }: ChartResultTextOpti
       `생년월일: ${formatBirthDate(searchParams.birthDate)}`,
       `출생 시간: ${formatBirthTime(searchParams.birthTime, searchParams.timeUnknown)}`,
       `국가: ${countryLabel}`,
-      `입력 도시: ${searchParams.city ?? "입력되지 않음"}`,
+      `입력 도시: ${searchParams.city ?? "입력하지 않음"}`,
       `입력 timezone: ${fallbackTimezone}`
     ]),
     section("확정된 위치", [
@@ -180,8 +180,8 @@ export function buildChartResultText({ searchParams, data }: ChartResultTextOpti
       `ASC: ${formatDegree(data.angles.asc.sign, data.angles.asc.degree, data.angles.asc.minute)}`,
       `MC: ${formatDegree(data.angles.mc.sign, data.angles.mc.degree, data.angles.mc.minute)}`
     ]),
-    section("핵심 포인트 요약", bulletList(primaryPoints.map(formatPoint))),
-    section("전체 행성 및 포인트", bulletList(data.points.map(formatPoint))),
+    section("핵심 행성 요약", bulletList(primaryPoints.map(formatPoint))),
+    section("전체 행성과 포인트", bulletList(data.points.map(formatPoint))),
     section(
       "홀사인 하우스",
       bulletList(data.houses.map((house) => `${house.houseNumber}하우스: ${house.sign} 0°00′`))
@@ -207,7 +207,7 @@ export function buildHoroscopeResultText({
       `생년월일: ${formatBirthDate(searchParams.birthDate)}`,
       `출생 시간: ${formatBirthTime(searchParams.birthTime, searchParams.timeUnknown)}`,
       `국가: ${countryLabel}`,
-      `입력 도시: ${searchParams.city ?? "입력되지 않음"}`,
+      `입력 도시: ${searchParams.city ?? "입력하지 않음"}`,
       `입력 timezone: ${fallbackTimezone}`,
       `조회 연도: ${yearly.year}`,
       `선택 월: ${selectedMonth}월`
@@ -219,41 +219,31 @@ export function buildHoroscopeResultText({
         `강도: ${item.intensityScore}/10`,
         `핵심 테마: ${item.topTheme}`,
         `집중 영역: ${item.focusAreas.join(", ")}`,
-        `좋은 흐름: ${item.luckyWindow.label}`,
+        `좋은 구간: ${item.luckyWindow.label}`,
         `주의 구간: ${item.cautionWindow.label}`
       ])
     ]),
     section(`${monthly.year}년 ${monthly.month}월 상세 리딩`, [
-      `리딩 유형: ${monthly.llmEnhanced ? "AI 확장 리딩" : "기본 리딩"}`,
+      `리딩 유형: ${monthly.llmEnhanced ? "AI 확장 리딩" : "기본 계산 리딩"}`,
       `요약: ${monthly.summary}`,
       `커리어: ${monthly.sections.career}`,
       `재정: ${monthly.sections.money}`,
       `관계: ${monthly.sections.love}`,
-      `리스크: ${monthly.sections.risk}`
+      `컨디션: ${monthly.sections.risk}`
     ]),
     section(
       "좋은 날짜",
-      bulletList(
-        monthly.luckyDates.map(
-          (item) => `${formatHoroscopeDate(item.date)} - ${item.label}: ${item.reason}`
-        )
-      )
+      bulletList(monthly.luckyDates.map((item) => `${formatHoroscopeDate(item.date)} - ${item.label}: ${item.reason}`))
     ),
     section(
       "주의 날짜",
       bulletList(
-        monthly.cautionDates.map(
-          (item) => `${formatHoroscopeDate(item.date)} - ${item.label}: ${item.reason}`
-        )
+        monthly.cautionDates.map((item) => `${formatHoroscopeDate(item.date)} - ${item.label}: ${item.reason}`)
       )
     ),
     section(
-      "핵심 근거",
-      bulletList(
-        monthly.evidence.map(
-          (item) => `${formatHoroscopeDate(item.date)} - ${item.headline}: ${item.detail}`
-        )
-      )
+      "해석 근거",
+      bulletList(monthly.evidence.map((item) => `${formatHoroscopeDate(item.date)} - ${item.headline}: ${item.detail}`))
     )
   ]
     .filter(Boolean)

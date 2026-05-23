@@ -85,6 +85,25 @@ function New-CodexCommitMessage {
     "app/services/llm_retention_client.py",
     "tests/test_llm_retention_client.py"
   )
+  $hasAuthOrPersistentCache = Test-AnyPath $ChangedPaths @(
+    "app/routers/auth.py",
+    "app/schemas/auth.py",
+    "app/services/auth_service.py",
+    "app/services/persistent_cache.py",
+    "app/account/*",
+    "app/login/*",
+    "app/signup/*",
+    "components/AuthForm.tsx",
+    "components/AccountPanel.tsx",
+    "tests/test_auth_api.py"
+  )
+  $hasHoroscopeUx = Test-AnyPath $ChangedPaths @(
+    "app/horoscope/page.tsx",
+    "components/HoroscopeSections.tsx",
+    "app/services/interpretation_engine.py",
+    "app/services/transit_engine.py",
+    "app/lib/resultText.ts"
+  )
   $hasBackend = Test-AnyPath $ChangedPaths @(
     "app/routers/*",
     "app/schemas/*",
@@ -97,6 +116,15 @@ function New-CodexCommitMessage {
   }
   if ($hasNavigation -and $hasLocation) {
     return "Improve navigation and location selection"
+  }
+  if ($hasAuthOrPersistentCache -and $hasHoroscopeUx) {
+    return "Improve horoscope UX and add account-backed caching"
+  }
+  if ($hasAuthOrPersistentCache) {
+    return "Add account and persistent cache support"
+  }
+  if ($hasHoroscopeUx) {
+    return "Improve horoscope result experience"
   }
   if ($hasLlmRetention) {
     return "Update LLM retention provider support"

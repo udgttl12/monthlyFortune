@@ -96,7 +96,7 @@ function MonthOverviewCard({
       </div>
       <div className="window-copy">
         <p>
-          <strong>좋은 흐름</strong> {item.luckyWindow.label}
+          <strong>좋은 구간</strong> {item.luckyWindow.label}
         </p>
         <p>
           <strong>주의 구간</strong> {item.cautionWindow.label}
@@ -108,16 +108,19 @@ function MonthOverviewCard({
 
 function DateInsightList({
   title,
+  description,
   items,
   tone
 }: {
   title: string;
+  description: string;
   items: HoroscopeDateInsight[];
   tone: "positive" | "negative";
 }) {
   return (
     <article className="card section-card">
       <h2>{title}</h2>
+      <p className="muted section-description">{description}</p>
       <div className={`date-insight-list ${tone}`}>
         {items.map((item) => (
           <article key={`${title}-${item.date}`} className="date-insight-item">
@@ -136,8 +139,8 @@ function EvidenceList({ items }: { items: HoroscopeEvidence[] }) {
     <section className="card">
       <div className="section-heading">
         <div>
-          <h2>핵심 근거</h2>
-          <p className="muted">이번 달 리딩을 만들 때 강하게 잡힌 트랜짓과 포인트입니다.</p>
+          <h2>해석 근거</h2>
+          <p className="muted">이번 달 리딩에 크게 반영된 주요 트랜싯과 사인입니다.</p>
         </div>
       </div>
 
@@ -171,12 +174,13 @@ export default async function HoroscopeSections({ searchParams }: HoroscopeSecti
       <article className="card section-card">
         <h2>운세를 불러오지 못했습니다</h2>
         <p>
-          FastAPI 서버가 실행 중인지, 그리고 입력한 출생 정보와 도시명이 올바른지 확인해 주세요.
+          FastAPI 서버가 실행 중인지, 입력한 출생 정보와 조회 연도/월이 올바른지 확인해 주세요.
         </p>
       </article>
     );
   }
 
+  const selectedOverview = yearly.months.find((item) => item.month === selectedMonth);
   const horoscopeResultText = buildHoroscopeResultText({
     searchParams,
     yearly,
@@ -193,20 +197,63 @@ export default async function HoroscopeSections({ searchParams }: HoroscopeSecti
 
   return (
     <div className="stack">
-      <div className="result-toolbar">
-        <CopyResultsButton text={horoscopeResultText} />
-      </div>
+      <section className="card hero-card horoscope-result-hero">
+        <div>
+          <span className="eyebrow">연간 운세 결과</span>
+          <h1>{yearly.year}년 흐름 요약</h1>
+          <p className="muted hero-copy">{yearly.profileSummary}</p>
+        </div>
+        <div className="result-toolbar">
+          <CopyResultsButton text={horoscopeResultText} />
+        </div>
+      </section>
+
+      <section className="card monthly-highlight">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">선택한 달</span>
+            <h2>
+              {monthly.year}년 {monthly.month}월 상세 리딩
+            </h2>
+            <p className="muted">{monthly.summary}</p>
+          </div>
+          <span className={`query-pill ${monthly.llmEnhanced ? "active" : ""}`}>
+            {monthly.llmEnhanced ? "AI 보강" : "기본 계산"}
+          </span>
+        </div>
+
+        {selectedOverview ? (
+          <div className="horoscope-summary-strip">
+            <div>
+              <span>이번 달 주제</span>
+              <strong>{selectedOverview.topTheme}</strong>
+            </div>
+            <div>
+              <span>흐름 강도</span>
+              <strong>{selectedOverview.intensityScore}/10</strong>
+            </div>
+            <div>
+              <span>좋은 구간</span>
+              <strong>{selectedOverview.luckyWindow.label}</strong>
+            </div>
+            <div>
+              <span>주의 구간</span>
+              <strong>{selectedOverview.cautionWindow.label}</strong>
+            </div>
+          </div>
+        ) : null}
+      </section>
 
       <section className="card">
         <div className="section-heading">
           <div>
-            <h2>{yearly.year}년 연간 개요</h2>
-            <p className="muted">{yearly.profileSummary}</p>
+            <h2>12개월 흐름</h2>
+            <p className="muted">궁금한 달을 누르면 위의 상세 리딩이 해당 월로 바뀝니다.</p>
           </div>
-          <span className="query-pill">{selectedMonth}월 상세 보기</span>
+          <span className="query-pill">{selectedMonth}월 보는 중</span>
         </div>
 
-        <div className="month-grid">
+        <div className="month-grid compact-month-grid">
           {yearly.months.map((item) => (
             <MonthOverviewCard
               key={item.month}
@@ -215,20 +262,6 @@ export default async function HoroscopeSections({ searchParams }: HoroscopeSecti
               href={buildHoroscopePageHref(searchParams, selectedYear, item.month)}
             />
           ))}
-        </div>
-      </section>
-
-      <section className="card">
-        <div className="section-heading">
-          <div>
-            <h2>
-              {monthly.year}년 {monthly.month}월 상세 리딩
-            </h2>
-            <p className="muted">{monthly.summary}</p>
-          </div>
-          <span className={`query-pill ${monthly.llmEnhanced ? "active" : ""}`}>
-            {monthly.llmEnhanced ? "AI 확장 리딩" : "기본 리딩"}
-          </span>
         </div>
       </section>
 
@@ -246,14 +279,24 @@ export default async function HoroscopeSections({ searchParams }: HoroscopeSecti
           <p>{monthly.sections.love}</p>
         </article>
         <article className="card section-card">
-          <h2>리스크</h2>
+          <h2>컨디션</h2>
           <p>{monthly.sections.risk}</p>
         </article>
       </div>
 
       <div className="section-grid two-column-grid">
-        <DateInsightList title="좋은 날짜" items={monthly.luckyDates} tone="positive" />
-        <DateInsightList title="주의 날짜" items={monthly.cautionDates} tone="negative" />
+        <DateInsightList
+          title="좋은 날짜"
+          description="시작, 연락, 조정처럼 힘을 실어도 좋은 날입니다."
+          items={monthly.luckyDates}
+          tone="positive"
+        />
+        <DateInsightList
+          title="주의 날짜"
+          description="속도 조절과 확인이 필요한 날입니다."
+          items={monthly.cautionDates}
+          tone="negative"
+        />
       </div>
 
       <EvidenceList items={monthly.evidence} />

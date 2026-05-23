@@ -141,25 +141,24 @@ class InterpretationEngine:
 
     def _build_profile_summary(self, profile: NatalProfile) -> str:
         return (
-            f"{profile.sun_sign} 태양, {profile.moon_sign} 달, {profile.rising_sign} 상승점을 가진 차트입니다. "
-            f"기본 기질은 {profile.dominant_element_label} 원소가 강하고, 올해는 "
-            f"{profile.focus_areas[0]}와 {profile.focus_areas[1]} 축을 중심으로 흐름을 읽는 편이 가장 정확합니다."
+            f"태양은 {profile.sun_sign}, 달은 {profile.moon_sign}, 상승궁은 {profile.rising_sign}에 있습니다. "
+            f"차트에서 {profile.dominant_element_label} 기질이 두드러지고, 올해는 "
+            f"{profile.focus_areas[0]}와 {profile.focus_areas[1]} 흐름을 중심으로 읽는 것이 좋습니다."
         )
 
     def _build_summary(self, analysis: MonthlyTransitAnalysis, profile: NatalProfile) -> str:
         if analysis.total_score >= 6:
-            stance = "밀어붙일 타이밍과 정리할 타이밍이 분명해지는 달"
+            stance = "새로운 시도와 확장에 힘을 실어도 좋은 흐름"
         elif analysis.total_score >= 0:
-            stance = "작은 조정이 실제 성과로 이어지기 쉬운 달"
+            stance = "정리와 실행을 함께 가져가면 성과가 나는 흐름"
         elif analysis.intensity_score >= 8:
-            stance = "리듬 관리와 우선순위 조정이 특히 중요한 달"
+            stance = "감정과 일정의 과열을 줄이고 우선순위를 다시 잡아야 하는 흐름"
         else:
-            stance = "무리한 확장보다 균형 회복이 먼저인 달"
+            stance = "무리한 확장보다 균형 회복을 먼저 보는 흐름"
 
         return (
-            f"{analysis.month}월은 {analysis.top_theme_label} 이슈가 가장 크게 떠오르며, "
-            f"{profile.focus_areas[0]} 성향이 배경에서 계속 작동합니다. "
-            f"전체적으로는 {stance}입니다."
+            f"{analysis.month}월은 {analysis.top_theme_label} 이슈가 가장 크게 올라옵니다. "
+            f"{profile.focus_areas[0]} 성향을 바탕으로 움직이되, 전체적으로는 {stance}입니다."
         )
 
     def _build_section_text(
@@ -174,27 +173,27 @@ class InterpretationEngine:
             (event for event in analysis.evidence if event.theme == theme_key),
             analysis.evidence[0] if analysis.evidence else None,
         )
-        evidence_text = strongest_evidence.headline if strongest_evidence is not None else "큰 파동은 제한적"
+        evidence_text = strongest_evidence.headline if strongest_evidence is not None else "큰 흐름은 비교적 완만합니다"
 
         if score >= 4:
-            tone = "확장 쪽으로 흐름이 기울어 있습니다"
+            tone = "앞으로 밀어붙일 힘이 있습니다"
         elif score >= 0:
-            tone = "천천히 정리하면 성과를 낼 수 있습니다"
+            tone = "천천히 정리하면 성과를 만들 수 있습니다"
         elif score <= -4:
             tone = "속도를 줄이고 방어적으로 움직이는 편이 좋습니다"
         else:
-            tone = "조율이 필요하지만 충분히 다룰 수 있는 수준입니다"
+            tone = "작은 조율은 필요하지만 충분히 다룰 수 있습니다"
 
         if theme_key == "career":
-            guidance = "한 번에 많은 일을 벌이기보다 핵심 우선순위 하나를 끝까지 밀어보세요."
+            guidance = "해야 할 일을 넓히기보다 가장 중요한 일 하나를 끝까지 밀어보세요."
         elif theme_key == "money":
-            guidance = "지출 구조를 먼저 정리하고, 큰 결정은 좋은 날짜 쪽으로 맞추는 편이 유리합니다."
+            guidance = "지출 구조를 먼저 정리하고, 큰 결정은 좋은 날짜 쪽으로 맞추는 편이 안전합니다."
         elif theme_key == "love":
-            guidance = "상대의 반응을 추측하기보다 직접적인 대화와 리듬 조절이 도움이 됩니다."
+            guidance = "상대의 반응을 추측하기보다 직접적이고 차분한 대화가 도움이 됩니다."
         else:
-            guidance = "피로 누적과 일정 과밀이 리스크를 키우므로 휴식과 마감 간격을 남겨두는 편이 좋습니다."
+            guidance = "일정 과밀과 피로 누적을 줄이고 회복 시간을 먼저 확보하세요."
 
-        return f"{focus} 영역은 {tone} 근거로는 {evidence_text} 흐름이 두드러지고, {guidance}"
+        return f"{focus} 영역은 {tone}. 근거로는 {evidence_text} 흐름이 보이며, {guidance}"
 
     def _build_day_insight(self, day, positive: bool) -> HoroscopeDateInsight:
         source_event = (
@@ -212,18 +211,18 @@ class InterpretationEngine:
         theme_label = THEME_LABELS[theme_key]
 
         if positive:
-            label = f"{theme_label} 운이 트이는 날"
+            label = f"{theme_label}에 힘이 실리는 날"
             reason = (
                 source_event.detail
                 if source_event is not None
-                else f"{theme_label} 관련 선택을 밀어붙이기 좋은 비교적 부드러운 흐름입니다."
+                else f"{theme_label} 관련 선택을 진행하기 좋은 흐름입니다."
             )
         else:
             label = f"{theme_label} 속도 조절이 필요한 날"
             reason = (
                 source_event.detail
                 if source_event is not None
-                else f"{theme_label} 관련 압박이 높아져 무리한 결정을 피하는 편이 좋습니다."
+                else f"{theme_label} 관련 판단이 흔들릴 수 있어 확인을 먼저 하는 편이 좋습니다."
             )
 
         return HoroscopeDateInsight(date=day.date, label=label, reason=reason)

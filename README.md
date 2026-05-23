@@ -76,7 +76,21 @@ export LLM_RETENTION_MODEL=unsloth/gemma-4-E2B-it-GGUF:UD-Q4_K_XL
 export GEMMA_API_BASE_URL=https://gemma.donggyu.link
 ```
 
-If the selected provider has no usable API key, `/calendar`, `/today`, and `/coach` fall back to deterministic timing guidance from the transit engine. MariaDB is intentionally not used in v1; add it only when server-side history or cross-device storage is required.
+If the selected provider has no usable API key, `/calendar`, `/today`, and `/coach` fall back to deterministic timing guidance from the transit engine. MariaDB is optional, but recommended for persistent result caching and account features.
+
+MariaDB-backed cache and account settings:
+
+```bash
+export MONTHLY_FORTUNE_MARIADB_HOST=localhost
+export MONTHLY_FORTUNE_MARIADB_PORT=3306
+export MONTHLY_FORTUNE_MARIADB_USER=monthly_fortune
+export MONTHLY_FORTUNE_MARIADB_PASSWORD=change_me
+export MONTHLY_FORTUNE_MARIADB_DATABASE=monthly_fortune
+export MONTHLY_FORTUNE_CACHE_TTL_DAYS=365
+export MONTHLY_FORTUNE_SESSION_DAYS=30
+```
+
+When these MariaDB settings are present, horoscope yearly/monthly responses are saved in `fortune_result_cache` and reused by cache key before recomputing or calling an LLM. The account API uses `fortune_users` and `fortune_user_sessions`; without MariaDB settings the account endpoints return `503` and the core horoscope flow still works.
 
 ## Production deployment
 

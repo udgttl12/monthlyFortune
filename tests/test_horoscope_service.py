@@ -25,8 +25,23 @@ class RecordingXAIService:
         return self.response
 
 
+class RecordingPersistentCache:
+    def __init__(self) -> None:
+        self.store = {}
+        self.gets = 0
+        self.sets = 0
+
+    def get(self, namespace: str, cache_key: str):
+        self.gets += 1
+        return self.store.get((namespace, cache_key))
+
+    def set(self, namespace: str, cache_key: str, payload: dict) -> None:
+        self.sets += 1
+        self.store[(namespace, cache_key)] = payload
+
+
 class HoroscopeServiceTestCase(unittest.TestCase):
-    def build_service(self, xai_service) -> HoroscopeService:
+    def build_service(self, xai_service, persistent_cache=None) -> HoroscopeService:
         natal_chart_engine = NatalChartEngine()
         return HoroscopeService(
             astrology_service=AstrologyService(
@@ -41,6 +56,7 @@ class HoroscopeServiceTestCase(unittest.TestCase):
             monthly_cache=TTLCache(ttl_seconds=3600),
             analysis_cache=TTLCache(ttl_seconds=3600),
             xai_service=xai_service,
+            persistent_cache=persistent_cache,
         )
 
     def build_request(self) -> MonthlyHoroscopeRequest:
@@ -103,3 +119,21 @@ class HoroscopeServiceTestCase(unittest.TestCase):
         self.assertFalse(first.llm_enhanced)
         self.assertEqual(first.summary, second.summary)
         self.assertEqual(xai_service.calls, 1)
+
+    def test_monthly_reuses_persistent_cache_without_llm_call(self) -> None:
+        persistent_cache = RecordingPersistentCache()
+        first_xai_service = RecordingXAIService(None)
+        first_service = self.build_service(first_xai_service, persistent_cache=persistent_cache)
+        request = self.build_request()
+
+        first = first_service.monthly_horoscope(request)
+
+        second_xai_service = RecordingXAIService(None)
+        second_service = self.build_service(second_xai_service, persistent_cache=persistent_cache)
+        second = second_service.monthly_horoscope(request)
+
+        self.assertFalse(second.llm_enhanced)
+        self.assertEqual(second.summary, first.summary)
+        self.assertEqual(first_xai_service.calls, 1)
+        self.assertEqual(second_xai_service.calls, 0)
+        self.assertGreaterEqual(persistent_cache.sets, 1)
