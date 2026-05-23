@@ -67,7 +67,16 @@ export LLM_RETENTION_PROVIDER=deepseek
 export LLM_RETENTION_MODEL=deepseek-v4-pro
 ```
 
-If `LLM_RETENTION_API_KEY` is empty, `/calendar`, `/today`, and `/coach` fall back to deterministic timing guidance from the transit engine. MariaDB is intentionally not used in v1; add it only when server-side history or cross-device storage is required.
+To switch the retention loop to the OpenAI-compatible Gemma endpoint:
+
+```bash
+export LLM_RETENTION_PROVIDER=gemma
+export GEMMA_API_KEY=your_gemma_bearer_token
+export LLM_RETENTION_MODEL=unsloth/gemma-4-E2B-it-GGUF:UD-Q4_K_XL
+export GEMMA_API_BASE_URL=https://gemma.donggyu.link
+```
+
+If the selected provider has no usable API key, `/calendar`, `/today`, and `/coach` fall back to deterministic timing guidance from the transit engine. MariaDB is intentionally not used in v1; add it only when server-side history or cross-device storage is required.
 
 ## Production deployment
 

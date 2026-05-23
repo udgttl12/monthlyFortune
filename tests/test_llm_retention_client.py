@@ -50,6 +50,22 @@ class LLMRetentionClientTestCase(unittest.TestCase):
         self.assertTrue(client.enabled)
         self.assertEqual(client.model, "deepseek-v4-pro")
 
+    def test_from_env_selects_gemma_provider(self) -> None:
+        with patch.dict(
+            os.environ,
+            {
+                "LLM_RETENTION_PROVIDER": "gemma",
+                "GEMMA_API_KEY": "test-key",
+            },
+            clear=False,
+        ):
+            client = LLMRetentionClient.from_env()
+
+        self.assertEqual(client.provider, "gemma")
+        self.assertTrue(client.enabled)
+        self.assertEqual(client.model, "unsloth/gemma-4-E2B-it-GGUF:UD-Q4_K_XL")
+        self.assertEqual(client.base_url, "https://gemma.donggyu.link")
+
     def test_xai_response_parser_reads_responses_output_text(self) -> None:
         client = LLMRetentionClient(provider="xai", api_key="test-key", model="test-model", timeout_seconds=5)
         response = Mock()
@@ -89,6 +105,35 @@ class LLMRetentionClientTestCase(unittest.TestCase):
         self.assertIsInstance(result, ActionCalendarLLMResponse)
         self.assertEqual(result.days[0].score, 8)
         self.assertIn("/chat/completions", str(post.call_args.args[0]))
+
+    def test_gemma_response_parser_reads_openai_chat_completion_content(self) -> None:
+        client = LLMRetentionClient(
+            provider="gemma",
+            api_key="test-key",
+            model="unsloth/gemma-4-E2B-it-GGUF:UD-Q4_K_XL",
+            timeout_seconds=5,
+            base_url="https://gemma.donggyu.link",
+        )
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [{"message": {"content": json.dumps({"days": [self._day_payload()]}, ensure_ascii=False)}}]
+        }
+
+        with patch("app.services.llm_retention_client.httpx.post", return_value=response) as post:
+            result = client.generate_action_calendar(
+                profile=self.profile,
+                analysis=self.analysis,
+                signals=[self.signal],
+                fallback_days=[],
+            )
+
+        self.assertIsInstance(result, ActionCalendarLLMResponse)
+        self.assertEqual(result.days[0].score, 8)
+        self.assertEqual(post.call_args.args[0], "https://gemma.donggyu.link/v1/chat/completions")
+        request_payload = post.call_args.kwargs["json"]
+        self.assertEqual(request_payload["model"], "unsloth/gemma-4-E2B-it-GGUF:UD-Q4_K_XL")
+        self.assertNotIn("response_format", request_payload)
 
     def test_invalid_provider_disables_client(self) -> None:
         client = LLMRetentionClient(provider="none", api_key="test-key", model="test-model", timeout_seconds=5)

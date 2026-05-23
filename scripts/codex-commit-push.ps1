@@ -80,6 +80,11 @@ function New-CodexCommitMessage {
     "scripts/codex-commit-push.ps1",
     "README.md"
   )
+  $hasLlmRetention = Test-AnyPath $ChangedPaths @(
+    ".env.production.example",
+    "app/services/llm_retention_client.py",
+    "tests/test_llm_retention_client.py"
+  )
   $hasBackend = Test-AnyPath $ChangedPaths @(
     "app/routers/*",
     "app/schemas/*",
@@ -92,6 +97,9 @@ function New-CodexCommitMessage {
   }
   if ($hasNavigation -and $hasLocation) {
     return "Improve navigation and location selection"
+  }
+  if ($hasLlmRetention) {
+    return "Update LLM retention provider support"
   }
   if ($hasCodexHelper) {
     return "Add Codex commit and push helper"

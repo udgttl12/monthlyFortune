@@ -22,30 +22,44 @@ class LLMRetentionClient:
         api_key: Optional[str],
         model: str,
         timeout_seconds: float,
+        base_url: Optional[str] = None,
     ) -> None:
         self.provider = provider.strip().casefold()
         self.api_key = api_key
         self.model = model
         self.timeout_seconds = timeout_seconds
+        self.base_url = base_url.rstrip("/") if base_url else None
         self.prompt_version = "ai-retention-v1"
 
     @classmethod
     def from_env(cls) -> "LLMRetentionClient":
         provider = os.getenv("LLM_RETENTION_PROVIDER", "xai").strip().casefold()
-        default_model = "deepseek-v4-pro" if provider == "deepseek" else "grok-4.20-reasoning"
+        default_models = {
+            "deepseek": "deepseek-v4-pro",
+            "gemma": "unsloth/gemma-4-E2B-it-GGUF:UD-Q4_K_XL",
+            "xai": "grok-4.20-reasoning",
+        }
+        default_base_urls = {
+            "gemma": "https://gemma.donggyu.link",
+        }
         api_key = os.getenv("LLM_RETENTION_API_KEY")
         if not api_key and provider == "xai":
             api_key = os.getenv("XAI_API_KEY")
+        if not api_key and provider == "gemma":
+            api_key = os.getenv("GEMMA_API_KEY")
         return cls(
             provider=provider,
             api_key=api_key,
-            model=os.getenv("LLM_RETENTION_MODEL", default_model),
+            model=os.getenv("LLM_RETENTION_MODEL", default_models.get(provider, default_models["xai"])),
             timeout_seconds=float(os.getenv("LLM_RETENTION_TIMEOUT_SECONDS", "45")),
+            base_url=os.getenv("LLM_RETENTION_BASE_URL")
+            or os.getenv("GEMMA_API_BASE_URL")
+            or default_base_urls.get(provider),
         )
 
     @property
     def enabled(self) -> bool:
-        return bool(self.api_key) and self.provider in {"xai", "deepseek"}
+        return bool(self.api_key) and self.provider in {"xai", "deepseek", "gemma"}
 
     def generate_action_calendar(
         self,
@@ -131,6 +145,8 @@ class LLMRetentionClient:
             return None
         if self.provider == "deepseek":
             return self._post_deepseek(system_prompt=system_prompt, user_payload=user_payload)
+        if self.provider == "gemma":
+            return self._post_gemma(system_prompt=system_prompt, user_payload=user_payload)
         return self._post_xai(
             schema_name=schema_name,
             schema=schema,
@@ -188,6 +204,31 @@ class LLMRetentionClient:
         try:
             response = httpx.post(
                 "https://api.deepseek.com/chat/completions",
+                headers=self._headers(),
+                json=request_payload,
+                timeout=self.timeout_seconds,
+            )
+            response.raise_for_status()
+        except httpx.HTTPError:
+            return None
+        return self._extract_deepseek_text(response.json())
+
+    def _post_gemma(self, system_prompt: str, user_payload: dict[str, Any]) -> Optional[str]:
+        if not self.base_url:
+            return None
+        request_payload = {
+            "model": self.model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": json.dumps(user_payload, ensure_ascii=False)},
+            ],
+            "temperature": 0,
+            "max_tokens": 2048,
+            "stream": False,
+        }
+        try:
+            response = httpx.post(
+                f"{self.base_url}/v1/chat/completions",
                 headers=self._headers(),
                 json=request_payload,
                 timeout=self.timeout_seconds,

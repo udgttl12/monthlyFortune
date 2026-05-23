@@ -7,3 +7,4 @@ live-ai-*.log
 __pycache__/
 *.py[cod]
 .venv*/
+docs/gemma-api-spec.md
