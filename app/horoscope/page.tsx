@@ -49,9 +49,9 @@ export default function HoroscopePage({ searchParams }: HoroscopePageProps) {
 
           <BirthDetailsForm
             action="/horoscope"
-            submitLabel="연간 운세 다시 보기"
+            submitLabel="월운 다시 보기"
             secondarySubmitAction="/chart"
-            secondarySubmitLabel="출생 차트 보기"
+            secondarySubmitLabel="차트 근거 보기"
             showYearField
             defaultYear={selectedYear}
           />
@@ -63,18 +63,18 @@ export default function HoroscopePage({ searchParams }: HoroscopePageProps) {
   return (
     <div className="stack">
       <section className="card hero-card">
-        <span className="eyebrow">개인 맞춤 연간 운세</span>
-        <h1>올해의 흐름을 먼저 보고, 궁금한 달을 깊게 읽어보세요.</h1>
+        <span className="eyebrow">점성술로 보는 나만의 월운</span>
+        <h1>이번 달의 흐름을 먼저 읽고, 오늘의 선택으로 이어가세요.</h1>
         <p className="muted hero-copy">
-          출생 차트를 기준으로 12개월 흐름을 계산합니다. 연간 화면에서는 월별 강도와 좋은 구간,
-          주의 구간을 한눈에 보고, 선택한 달에서는 커리어, 재정, 관계, 컨디션을 자세히 확인합니다.
+          출생 차트를 기준으로 이번 달의 핵심, 좋은 날짜와 주의 날짜, 분야별 상세를 먼저 보여줍니다.
+          12개월 흐름과 차트 근거는 월운을 더 잘 이해하기 위한 보조 정보로 이어집니다.
         </p>
       </section>
 
       <section className="card" id="birth-details">
         <div className="section-heading">
           <div>
-            <h2>출생 정보 입력</h2>
+            <h2>나만의 월운을 볼 출생 정보 입력</h2>
             <p className="muted">
               생년월일, 시간, 도시와 조회 연도를 입력하면 바로 결과 중심 화면으로 전환됩니다.
             </p>
@@ -83,19 +83,19 @@ export default function HoroscopePage({ searchParams }: HoroscopePageProps) {
 
         <BirthDetailsForm
           action="/horoscope"
-          submitLabel="연간 운세 보기"
+          submitLabel="나만의 월운 보기"
           secondarySubmitAction="/chart"
-          secondarySubmitLabel="출생 차트 보기"
+          secondarySubmitLabel="차트 근거 보기"
           showYearField
           defaultYear={selectedYear}
         />
       </section>
 
       <section className="card info-card">
-        <h2>무엇을 보여주나요?</h2>
+        <h2>무엇을 먼저 보여주나요?</h2>
         <p>
-          연간 개요는 12개월을 카드로 비교하고, 선택한 월은 핵심 요약과 분야별 조언,
-          좋은 날짜와 주의 날짜, 해석 근거 순서로 보여줍니다.
+          첫 화면은 이번 달 월운 요약, 좋은 날짜와 주의 날짜, 바로 이어갈 오늘 브리핑과 코치 동선입니다.
+          연간 흐름은 아래에서 비교할 수 있습니다.
         </p>
       </section>
     </div>

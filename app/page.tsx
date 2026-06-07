@@ -1,56 +1,64 @@
 import BirthDetailsForm from "@/components/BirthDetailsForm";
 import FloatingMenu from "@/components/FloatingMenu";
+import HomeResumePanel from "@/components/HomeResumePanel";
+import YongyongMascot from "@/components/YongyongMascot";
 import { buildFloatingMenuItems } from "@/app/lib/floatingMenu";
 
 export default function HomePage() {
   return (
     <div className="stack">
-      <section className="card hero-card">
-        <span className="eyebrow">개인 맞춤 점성술 리딩</span>
-        <h1>출생 정보로 차트와 연간 운세를 함께 읽어보세요.</h1>
-        <p className="muted hero-copy">
-          Monthly Fortune은 출생 일시와 도시를 기준으로 네이탈 차트를 계산하고, 그 위에 월별 흐름을 덧입혀
-          연간 개요와 월 상세 운세를 보여줍니다. 차트 확인과 운세 조회를 같은 폼에서 바로 시작할 수 있습니다.
-        </p>
-        <div className="pill-row">
-          <span className="info-pill">출생 차트 계산</span>
-          <span className="info-pill">연간 개요 + 월 상세</span>
-          <span className="info-pill">좋은 날짜 / 주의 날짜</span>
+      <section className="card hero-card home-hero">
+        <div className="home-hero-copy">
+          <span className="eyebrow">용용이와 함께 보는 월간 별자리 흐름</span>
+          <h1>점성술로 보는 나만의 월운</h1>
+          <p className="muted hero-copy">
+            출생 정보로 내 차트의 기준점을 잡고, 이번 달에 강해지는 흐름과 조심할 날짜를 먼저 읽어보세요.
+            차트는 근거가 되고, 월운은 이번 달의 선택을 도와주는 메인 리포트입니다.
+          </p>
+          <div className="pill-row">
+            <span className="info-pill">이번 달 핵심 요약</span>
+            <span className="info-pill">좋은 날짜 / 주의 날짜</span>
+            <span className="info-pill">오늘 브리핑과 코치로 이어보기</span>
+          </div>
         </div>
+        <YongyongMascot variant="hero" caption="수정구슬에 이번 달의 리듬을 비춰볼게요." />
       </section>
 
-      <section className="card" id="birth-details">
+      <HomeResumePanel />
+
+      <section className="card birth-entry-card" id="birth-details">
         <div className="section-heading">
           <div>
-            <h2>출생 정보 입력</h2>
+            <span className="eyebrow">나만의 월운 보기</span>
+            <h2>출생 정보를 입력하면 바로 이번 달 월운으로 이동합니다</h2>
             <p className="muted">
-              먼저 기본 정보를 입력하면 출생 차트와 개인 맞춤 운세를 바로 확인할 수 있습니다.
+              생년월일, 시간, 도시만 입력하면 월운 리포트를 먼저 보여주고, 차트 근거는 필요할 때 확인할 수 있습니다.
             </p>
           </div>
         </div>
 
         <BirthDetailsForm
-          action="/chart"
-          submitLabel="출생 차트 보기"
-          secondarySubmitAction="/horoscope"
-          secondarySubmitLabel="개인 운세 보기"
+          action="/horoscope"
+          submitLabel="나만의 월운 보기"
+          secondarySubmitAction="/chart"
+          secondarySubmitLabel="출생 차트로 근거 보기"
         />
       </section>
 
       <section className="info-grid">
         <article className="card info-card">
-          <h2>무엇을 볼 수 있나요?</h2>
+          <h2>월운이 먼저입니다</h2>
           <p>
-            태양, 달, 주요 행성, ASC, MC, Whole Sign House를 계산하고 그 결과를 바탕으로 올해 12개월의 흐름과
-            선택한 달의 상세 리딩을 제공합니다.
+            첫 결과는 이번 달의 핵심, 좋은 날짜, 주의 날짜, 분야별 상세입니다. 12개월 흐름과 차트는 월운을
+            더 잘 이해하기 위한 보조 정보로 배치합니다.
           </p>
         </article>
 
         <article className="card info-card">
-          <h2>운세는 어떻게 만들어지나요?</h2>
+          <h2>DB 없이도 시작할 수 있어요</h2>
           <p>
-            백엔드에서 점성 계산을 먼저 수행하고, 월 상세 리딩은 구조화된 결과를 바탕으로 자연어 분석을
-            확장합니다. API가 없더라도 기본 해석은 계속 제공됩니다.
+            최근 입력은 브라우저에 가볍게 저장합니다. 계정과 서버 저장함은 나중에 붙이더라도, 핵심 월운 경험은
+            지금 바로 자연스럽게 사용할 수 있어야 합니다.
           </p>
         </article>
       </section>

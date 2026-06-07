@@ -125,8 +125,8 @@ export function buildFloatingMenuItems({
 
   if (page === "home") {
     return [
-      { label: "출생 정보 입력", href: "#birth-details" as Route },
-      { label: "최근 차트", action: "recent" },
+      { label: "월운 입력", href: "#birth-details" as Route },
+      { label: "최근 월운", action: "recent" },
       ...buildAccountLinks(),
       { label: "맨 위로", action: "top" }
     ];
@@ -135,7 +135,7 @@ export function buildFloatingMenuItems({
   if (page === "chart") {
     return [
       ...(hasCopyText ? [{ label: "결과 복사", action: "copy" as const }] : []),
-      { label: "월간 운세", href: buildHoroscopeHref(safeSearchParams, selectedYear) },
+      { label: "나만의 월운", href: buildHoroscopeHref(safeSearchParams, selectedYear) },
       ...buildAccountLinks(),
       { label: "입력 수정", href: "/#birth-details" as Route },
       { label: "맨 위로", action: "top" as const }
@@ -145,7 +145,7 @@ export function buildFloatingMenuItems({
   if (page === "retention") {
     return [
       { label: "출생 차트", href: buildChartPageHref(safeSearchParams) },
-      { label: "월간 운세", href: buildHoroscopeHref(safeSearchParams, selectedYear, selectedMonth) },
+      { label: "나만의 월운", href: buildHoroscopeHref(safeSearchParams, selectedYear, selectedMonth) },
       ...buildRetentionLinks(safeSearchParams, selectedYear, selectedMonth),
       ...buildAccountLinks(),
       { label: "입력 수정", href: "#birth-details" as Route },

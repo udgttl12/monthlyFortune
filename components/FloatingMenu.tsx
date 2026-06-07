@@ -5,9 +5,9 @@ import { useEffect, useState } from "react";
 import type { Route } from "next";
 import {
   FloatingMenuItem,
-  buildStoredBirthDetailsHref
 } from "@/app/lib/floatingMenu";
 import { readLastViewedBirthDetails } from "@/app/lib/birthDetailsStorage";
+import { buildMonthlyResumeLinks } from "@/app/lib/experienceContext";
 
 interface FloatingMenuProps {
   items: FloatingMenuItem[];
@@ -46,7 +46,7 @@ export default function FloatingMenu({ items, copyText = "" }: FloatingMenuProps
     const stored = readLastViewedBirthDetails(window.localStorage);
 
     if (stored) {
-      setRecentHref(buildStoredBirthDetailsHref(stored, "chart"));
+      setRecentHref(buildMonthlyResumeLinks(stored)[0]?.href ?? null);
     }
   }, []);
 

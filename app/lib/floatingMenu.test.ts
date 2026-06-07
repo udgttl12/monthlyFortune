@@ -26,7 +26,7 @@ test("chart floating menu puts copy first and links to horoscope with readable l
 
   assert.deepEqual(
     items.map((item) => item.label),
-    ["결과 복사", "월간 운세", "내 계정", "로그인", "입력 수정", "맨 위로"]
+    ["결과 복사", "나만의 월운", "내 계정", "로그인", "입력 수정", "맨 위로"]
   );
   assert.equal(items[0].action, "copy");
   assert.equal(items[1].href?.startsWith("/horoscope?"), true);
@@ -76,7 +76,7 @@ test("retention pages keep the main navigation visible", () => {
 
   assert.deepEqual(
     items.map((item) => item.label),
-    ["출생 차트", "월간 운세", "오늘 브리핑", "액션 캘린더", "AI 코치", "내 계정", "로그인", "입력 수정", "맨 위로"]
+    ["출생 차트", "나만의 월운", "오늘 브리핑", "액션 캘린더", "AI 코치", "내 계정", "로그인", "입력 수정", "맨 위로"]
   );
   assert.equal(items.some((item) => item.href?.startsWith("/horoscope?")), true);
   assert.equal(items.some((item) => item.href?.startsWith("/calendar?")), true);
