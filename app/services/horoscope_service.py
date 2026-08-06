@@ -13,7 +13,7 @@ from app.services.chart_engine import ChartEngine
 from app.services.interpretation_engine import InterpretationEngine
 from app.services.persistent_cache import PersistentCache
 from app.services.transit_engine import MonthlyTransitAnalysis, TransitEngine
-from app.services.xai_service import XAIService
+from app.services.xai_service import MonthlyReportClient
 
 
 class HoroscopeService:
@@ -26,7 +26,7 @@ class HoroscopeService:
         yearly_cache: TTLCache,
         monthly_cache: TTLCache,
         analysis_cache: TTLCache,
-        xai_service: Optional[XAIService] = None,
+        xai_service: Optional[MonthlyReportClient] = None,
         persistent_cache: Optional[PersistentCache] = None,
     ) -> None:
         self.astrology_service = astrology_service
@@ -36,7 +36,7 @@ class HoroscopeService:
         self.yearly_cache = yearly_cache
         self.monthly_cache = monthly_cache
         self.analysis_cache = analysis_cache
-        self.xai_service = xai_service or XAIService()
+        self.xai_service = xai_service or MonthlyReportClient.from_env()
         self.persistent_cache = persistent_cache
         self.analysis_version = "horoscope-analysis-v1"
 
@@ -160,8 +160,11 @@ class HoroscopeService:
         return f"analysis:{self.analysis_version}:{self._birth_signature(request)}:{year}:{month}"
 
     def _monthly_cache_key(self, request: MonthlyHoroscopeRequest) -> str:
-        model_key = self.xai_service.model if self.xai_service.enabled else "fallback"
+        if self.xai_service.enabled:
+            llm_key = f"{self.xai_service.provider}:{self.xai_service.model}"
+        else:
+            llm_key = "none:fallback"
         return (
-            f"monthly:{self.analysis_version}:{self.xai_service.prompt_version}:{model_key}:"
+            f"monthly:{self.analysis_version}:{self.xai_service.prompt_version}:{llm_key}:"
             f"{self._birth_signature(request)}:{request.year}:{request.month}"
         )

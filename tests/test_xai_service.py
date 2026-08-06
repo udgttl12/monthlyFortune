@@ -1,4 +1,5 @@
 import json
+import os
 import unittest
 from datetime import date
 from unittest.mock import Mock, patch
@@ -8,10 +9,10 @@ import httpx
 from app.schemas.horoscope import HoroscopeSections
 from app.services.chart_engine import NatalProfile
 from app.services.transit_engine import MonthlyTransitAnalysis, TransitWindow
-from app.services.xai_service import XAIService
+from app.services.xai_service import MonthlyReportClient, XAIService
 
 
-class XAIServiceTestCase(unittest.TestCase):
+class MonthlyFixtureMixin:
     def setUp(self) -> None:
         self.service = XAIService(api_key="test-key", model="test-model", timeout_seconds=5)
         self.profile = NatalProfile(
@@ -72,8 +73,8 @@ class XAIServiceTestCase(unittest.TestCase):
             ],
         }
 
-    def test_successfully_parses_structured_output(self) -> None:
-        payload = {
+    def llm_payload(self) -> dict:
+        return {
             "summary": "AI 요약",
             "sections": {
                 "career": "AI 커리어",
@@ -93,6 +94,18 @@ class XAIServiceTestCase(unittest.TestCase):
             ],
             "evidence": [{"headline": "근거", "detail": "설명"}],
         }
+
+    def enhance(self, service) -> object:
+        return service.enhance_monthly_report(
+            profile=self.profile,
+            analysis=self.analysis,
+            fallback_payload=self.fallback_payload,
+        )
+
+
+class XAIServiceTestCase(MonthlyFixtureMixin, unittest.TestCase):
+    def test_successfully_parses_structured_output(self) -> None:
+        payload = self.llm_payload()
         response = Mock()
         response.raise_for_status.return_value = None
         response.json.return_value = {
@@ -143,3 +156,155 @@ class XAIServiceTestCase(unittest.TestCase):
             )
 
         self.assertIsNone(result)
+
+    def test_xai_still_posts_to_responses_endpoint(self) -> None:
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "output": [{"content": [{"text": json.dumps(self.llm_payload(), ensure_ascii=False)}]}]
+        }
+
+        with patch("app.services.xai_service.httpx.post", return_value=response) as post:
+            self.enhance(self.service)
+
+        self.assertEqual(post.call_args.args[0], "https://api.x.ai/v1/responses")
+        self.assertIn("text", post.call_args.kwargs["json"])
+
+
+class MonthlyReportClientUpstageTestCase(MonthlyFixtureMixin, unittest.TestCase):
+    def upstage_client(self, **overrides) -> MonthlyReportClient:
+        kwargs = {
+            "provider": "upstage",
+            "api_key": "test-key",
+            "model": "solar-pro3",
+            "timeout_seconds": 5,
+        }
+        kwargs.update(overrides)
+        return MonthlyReportClient(**kwargs)
+
+    def chat_completion_response(self, content: str) -> Mock:
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {"choices": [{"message": {"content": content}}]}
+        return response
+
+    def test_upstage_provider_posts_to_chat_completions(self) -> None:
+        response = self.chat_completion_response(json.dumps(self.llm_payload(), ensure_ascii=False))
+
+        with patch("app.services.xai_service.httpx.post", return_value=response) as post:
+            result = self.enhance(self.upstage_client())
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.summary, "AI 요약")
+        self.assertEqual(post.call_args.args[0], "https://api.upstage.ai/v1/chat/completions")
+
+    def test_upstage_request_uses_flattened_schema(self) -> None:
+        response = self.chat_completion_response(json.dumps(self.llm_payload(), ensure_ascii=False))
+
+        with patch("app.services.xai_service.httpx.post", return_value=response) as post:
+            self.enhance(self.upstage_client())
+
+        response_format = post.call_args.kwargs["json"]["response_format"]
+        self.assertEqual(response_format["type"], "json_schema")
+        self.assertEqual(response_format["json_schema"]["name"], "monthly_horoscope_enhancement")
+        self.assertIs(response_format["json_schema"]["strict"], True)
+        self.assertNotIn("$ref", json.dumps(response_format["json_schema"]["schema"]))
+        self.assertIs(response_format["json_schema"]["schema"]["additionalProperties"], False)
+
+    def test_upstage_reads_content_parts_array(self) -> None:
+        response = Mock()
+        response.raise_for_status.return_value = None
+        response.json.return_value = {
+            "choices": [
+                {
+                    "message": {
+                        "reasoning": "결정론적 초안을 다듬는다.",
+                        "content": [{"text": json.dumps(self.llm_payload(), ensure_ascii=False)}],
+                    }
+                }
+            ]
+        }
+
+        with patch("app.services.xai_service.httpx.post", return_value=response):
+            result = self.enhance(self.upstage_client())
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result.sections.love, "AI 관계")
+
+    def test_upstage_returns_none_on_http_error(self) -> None:
+        with patch(
+            "app.services.xai_service.httpx.post", side_effect=httpx.TimeoutException("timeout")
+        ):
+            result = self.enhance(self.upstage_client())
+
+        self.assertIsNone(result)
+
+    def test_upstage_returns_none_on_malformed_json(self) -> None:
+        response = self.chat_completion_response("{not-json")
+
+        with patch("app.services.xai_service.httpx.post", return_value=response):
+            result = self.enhance(self.upstage_client())
+
+        self.assertIsNone(result)
+
+
+class MonthlyReportClientFromEnvTestCase(unittest.TestCase):
+    def test_defaults_to_xai_with_legacy_env(self) -> None:
+        # MONTHLY_LLM_* 없이 기존 XAI_* 만 있어도 오늘과 동일하게 동작해야 한다.
+        with patch.dict(
+            os.environ,
+            {
+                "XAI_API_KEY": "legacy-key",
+                "XAI_MODEL": "grok-legacy",
+                "XAI_TIMEOUT_SECONDS": "30",
+            },
+            clear=True,
+        ):
+            client = MonthlyReportClient.from_env()
+
+        self.assertEqual(client.provider, "xai")
+        self.assertEqual(client.api_key, "legacy-key")
+        self.assertEqual(client.model, "grok-legacy")
+        self.assertEqual(client.timeout_seconds, 30.0)
+        self.assertTrue(client.enabled)
+
+    def test_selects_upstage(self) -> None:
+        with patch.dict(
+            os.environ,
+            {"MONTHLY_LLM_PROVIDER": "upstage", "UPSTAGE_API_KEY": "up-key"},
+            clear=True,
+        ):
+            client = MonthlyReportClient.from_env()
+
+        self.assertEqual(client.provider, "upstage")
+        self.assertEqual(client.model, "solar-pro3")
+        self.assertEqual(client.base_url, "https://api.upstage.ai/v1")
+        self.assertTrue(client.enabled)
+
+    def test_upstage_does_not_inherit_xai_key(self) -> None:
+        with patch.dict(
+            os.environ,
+            {"MONTHLY_LLM_PROVIDER": "upstage", "XAI_API_KEY": "xai-key"},
+            clear=True,
+        ):
+            client = MonthlyReportClient.from_env()
+
+        self.assertIsNone(client.api_key)
+        self.assertFalse(client.enabled)
+
+    def test_disabled_when_provider_unknown(self) -> None:
+        with patch.dict(
+            os.environ,
+            {"MONTHLY_LLM_PROVIDER": "nope", "MONTHLY_LLM_API_KEY": "some-key"},
+            clear=True,
+        ):
+            client = MonthlyReportClient.from_env()
+
+        self.assertFalse(client.enabled)
+
+    def test_missing_key_disables_client(self) -> None:
+        with patch.dict(os.environ, {}, clear=True):
+            client = MonthlyReportClient.from_env()
+
+        self.assertEqual(client.provider, "xai")
+        self.assertFalse(client.enabled)

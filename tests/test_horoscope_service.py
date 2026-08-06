@@ -13,10 +13,15 @@ from app.services.transit_engine import TransitEngine
 
 
 class RecordingXAIService:
-    def __init__(self, response: Optional[MonthlyHoroscopeLLMResponse]) -> None:
+    def __init__(
+        self,
+        response: Optional[MonthlyHoroscopeLLMResponse],
+        provider: str = "test-provider",
+    ) -> None:
         self.response = response
         self.calls = 0
         self.enabled = True
+        self.provider = provider
         self.model = "test-model"
         self.prompt_version = "test-prompt"
 
@@ -137,3 +142,18 @@ class HoroscopeServiceTestCase(unittest.TestCase):
         self.assertEqual(first_xai_service.calls, 1)
         self.assertEqual(second_xai_service.calls, 0)
         self.assertGreaterEqual(persistent_cache.sets, 1)
+
+    def test_monthly_cache_key_separates_providers(self) -> None:
+        persistent_cache = RecordingPersistentCache()
+        request = self.build_request()
+
+        first_xai_service = RecordingXAIService(None, provider="xai")
+        self.build_service(first_xai_service, persistent_cache=persistent_cache).monthly_horoscope(request)
+
+        second_xai_service = RecordingXAIService(None, provider="upstage")
+        self.build_service(second_xai_service, persistent_cache=persistent_cache).monthly_horoscope(request)
+
+        # provider가 다르면 캐시 키가 갈려야 한다. 같은 키를 쓰면 두 번째 호출이 0이 된다.
+        self.assertEqual(first_xai_service.calls, 1)
+        self.assertEqual(second_xai_service.calls, 1)
+        self.assertEqual(len(persistent_cache.store), 2)

@@ -83,7 +83,11 @@ function New-CodexCommitMessage {
   $hasLlmRetention = Test-AnyPath $ChangedPaths @(
     ".env.production.example",
     "app/services/llm_retention_client.py",
-    "tests/test_llm_retention_client.py"
+    "app/services/upstage_schema.py",
+    "app/services/xai_service.py",
+    "tests/test_llm_retention_client.py",
+    "tests/test_upstage_schema.py",
+    "tests/test_xai_service.py"
   )
   $hasAuthOrPersistentCache = Test-AnyPath $ChangedPaths @(
     "app/routers/auth.py",

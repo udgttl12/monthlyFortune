@@ -45,10 +45,21 @@ MONTHLY_FORTUNE_API_URL=http://127.0.0.1:8000
 XAI_API_KEY=
 XAI_MODEL=grok-4.20-reasoning
 XAI_TIMEOUT_SECONDS=45
+MONTHLY_LLM_PROVIDER=xai
+UPSTAGE_API_KEY=
+UPSTAGE_API_BASE_URL=https://api.upstage.ai/v1
+UPSTAGE_MODEL=solar-pro3
+UPSTAGE_REASONING_EFFORT=
 ```
 
 That value is correct for the recommended single-server deployment.
 If you leave `XAI_API_KEY` empty, the app falls back to deterministic monthly interpretations without AI expansion.
+
+`MONTHLY_LLM_PROVIDER` selects the provider for the monthly horoscope report (`xai` or `upstage`).
+It defaults to `xai` and reads the legacy `XAI_*` variables, so existing deployments keep working unchanged.
+Set it to `upstage` together with `UPSTAGE_API_KEY` to route the monthly report through Upstage Solar.
+The AI retention loop has its own switch, `LLM_RETENTION_PROVIDER`, which also accepts `upstage`.
+Changing either provider invalidates the matching cache entries by design, so the first requests after a switch recompute.
 
 ## 5. Build and install dependencies
 

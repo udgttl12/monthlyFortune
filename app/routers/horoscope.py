@@ -18,7 +18,7 @@ from app.services.interpretation_engine import InterpretationEngine
 from app.services.natal_chart_engine import NatalChartEngine
 from app.services.persistent_cache import PersistentCache
 from app.services.transit_engine import TransitEngine
-from app.services.xai_service import XAIService
+from app.services.xai_service import MonthlyReportClient
 
 router = APIRouter(prefix="/api/horoscope", tags=["horoscope"])
 
@@ -37,7 +37,7 @@ horoscope_service = HoroscopeService(
     yearly_cache=TTLCache(ttl_seconds=24 * 60 * 60),
     monthly_cache=TTLCache(ttl_seconds=7 * 24 * 60 * 60),
     analysis_cache=TTLCache(ttl_seconds=7 * 24 * 60 * 60),
-    xai_service=XAIService(),
+    xai_service=MonthlyReportClient.from_env(),
     persistent_cache=PersistentCache.from_env(),
 )
 

@@ -76,7 +76,32 @@ export LLM_RETENTION_MODEL=unsloth/gemma-4-E2B-it-GGUF:UD-Q4_K_XL
 export GEMMA_API_BASE_URL=https://gemma.donggyu.link
 ```
 
-If the selected provider has no usable API key, `/calendar`, `/today`, and `/coach` fall back to deterministic timing guidance from the transit engine. MariaDB is optional, but recommended for persistent result caching and account features.
+To switch the retention loop to Upstage Solar:
+
+```bash
+export LLM_RETENTION_PROVIDER=upstage
+export UPSTAGE_API_KEY=your_upstage_key
+export LLM_RETENTION_MODEL=solar-pro3
+```
+
+The monthly horoscope report uses a separate client with its own provider switch. It defaults to `xai` and reads the legacy `XAI_*` variables when `MONTHLY_LLM_*` is unset:
+
+```bash
+export MONTHLY_LLM_PROVIDER=upstage
+export UPSTAGE_API_KEY=your_upstage_key
+export UPSTAGE_MODEL=solar-pro3
+```
+
+Optional Upstage tuning (applies to both clients, omitted from the request when empty):
+
+```bash
+export UPSTAGE_REASONING_EFFORT=minimal
+export UPSTAGE_API_BASE_URL=https://api.upstage.ai/v1
+```
+
+Note the asymmetry: the retention loop picks its model from `LLM_RETENTION_MODEL`, while the monthly report reads `MONTHLY_LLM_MODEL` or the provider-scoped `UPSTAGE_MODEL` / `XAI_MODEL`.
+
+If the selected provider has no usable API key, `/calendar`, `/today`, `/coach`, and the monthly `/horoscope` report fall back to deterministic timing guidance from the transit engine and return `llmEnhanced: false`. MariaDB is optional, but recommended for persistent result caching and account features.
 
 MariaDB-backed cache and account settings:
 
